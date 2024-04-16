@@ -1,0 +1,48 @@
+GET http://localhost:3333/messages
+Content-Type: application/json
+
+{
+    "type": "jesus",
+    "content": "Yes papa??"
+}
+
+###
+
+POST http://localhost:3333/messages
+Content-Type: application/json
+
+{
+    "type": "all",
+    "content": "Yes papa?? 3",
+    "scheduled_at": null,
+    "criteria": null
+}
+
+###
+
+PUT http://localhost:3333/messages/01HS0FC04S5GGEM5H50D44FWAW
+Content-Type: application/json
+
+{
+    "type": "individual",
+    "content": "Yes papa?? 3",
+    "scheduled_at": null,
+    "criteria": "USR001"
+}
+
+###
+
+GET http://localhost:3333/messages/01HS0FC04S5GGEM5H50D44FWAW
+
+###
+
+GET http://localhost:3333/users/USR001/messages
+
+
+###
+
+GET http://localhost:3333/users/USR001/messages/01HS0FC04S5GGEM5H50D44FWAW
+
+###
+
+POST http://localhost:3333/users/USR001/messages/01HS0FC04S5GGEM5H50D44FWAW/read
