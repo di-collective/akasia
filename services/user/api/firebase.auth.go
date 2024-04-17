@@ -19,9 +19,15 @@ func (rest *REST) FirebaseAuth(w http.ResponseWriter, r *http.Request) {
 	}
 
 	fbaToken, err := rest.oauthVerifier.ValidateIDToken(ctx, idToken)
-	signedInEmail := fbaToken.Claims["email"].(string)
 	if err != nil {
 		json.NewEncoder(w).Encode(dto.Object[any]{Error: "Invalid ID Token"})
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	signedInEmail, ok := fbaToken.Claims["email"].(string)
+	if !ok {
+		json.NewEncoder(w).Encode(dto.Object[any]{Error: "Unknown Email"})
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
@@ -34,7 +40,7 @@ func (rest *REST) FirebaseAuth(w http.ResponseWriter, r *http.Request) {
 		})
 	}
 	if err != nil {
-		logrus.Error(err)
+		logrus.Errorf("failed to check user handle: %s; err: %s", signedInEmail, err)
 	}
 
 	r.ParseForm()
