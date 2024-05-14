@@ -2,6 +2,7 @@ package api
 
 import (
 	"encoding/json"
+	"io"
 	"monorepo/internal/dto"
 	"net/http"
 	"strings"
@@ -11,6 +12,7 @@ import (
 
 func (rest *REST) FirebaseAuth(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
+	w.Header().Set("Content-Type", "application/json")
 	idToken := strings.TrimSpace(r.URL.Query().Get("idToken"))
 	if idToken == "" {
 		json.NewEncoder(w).Encode(dto.Object[any]{Error: "ID Token should not be empty"})
@@ -33,16 +35,38 @@ func (rest *REST) FirebaseAuth(w http.ResponseWriter, r *http.Request) {
 	}
 
 	exists, err := rest.userService.IsHandleExists(ctx, signedInEmail)
-	if err == nil && !exists {
-		_, err = rest.userService.RegisterUser(ctx, &dto.RequestRegisterUser{
-			Provider: fbaToken.Firebase.SignInProvider,
-			Email:    signedInEmail,
-		})
-	}
 	if err != nil {
-		logrus.Errorf("failed to check user handle: %s; err: %s", signedInEmail, err)
+		json.NewEncoder(w).Encode(dto.Object[any]{Error: "User Not Exist"})
+		w.WriteHeader(http.StatusUnauthorized)
+		return
 	}
 
+	if !exists {
+		payload, err := io.ReadAll(r.Body)
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			json.NewEncoder(w).Encode(dto.Object[any]{Error: "Failed to Parse Payload"})
+			return
+		}
+
+		var reqRegister dto.RequestRegisterUser
+		json.Unmarshal(payload, &reqRegister)
+
+		reqRegister.Provider = fbaToken.Firebase.SignInProvider
+		reqRegister.Email = signedInEmail
+
+		_, err = rest.userService.RegisterUser(ctx, &reqRegister)
+		if err != nil {
+			logrus.Errorf("failed to register user: %s; err: %s", reqRegister.Email, err)
+
+			w.WriteHeader(http.StatusBadRequest)
+			json.NewEncoder(w).Encode(dto.Object[any]{Error: "Failed to Register User"})
+			return
+		}
+
+	}
+
+	// login
 	r.ParseForm()
 	r.Form.Set("grant_type", "client_credentials")
 	r.Form.Set("client_id", signedInEmail)

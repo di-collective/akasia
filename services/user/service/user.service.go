@@ -64,6 +64,10 @@ func (service *UserService) RegisterUser(ctx context.Context, body *dto.RequestR
 		return existing[0], nil
 	}
 
+	if body.Password == "" {
+		body.Password = utils.RandAlphanumericString(12)
+	}
+
 	plainTextPassword := utils.Ternary(body.Provider == "email", body.Password, ulid.Make().String())
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(plainTextPassword), bcrypt.DefaultCost)
 	if err != nil {
@@ -78,7 +82,11 @@ func (service *UserService) RegisterUser(ctx context.Context, body *dto.RequestR
 		CreatedAt: time.Now(),
 	}
 	err = service.tables.user.Create(ctx, newUser)
-	return newUser, err
+	if err != nil {
+		return nil, fmt.Errorf("%w; %w", ErrRepositoryMutateFail, err)
+	}
+
+	return newUser, nil
 }
 
 func (service *UserService) ChangePassword(ctx context.Context) error { return nil }

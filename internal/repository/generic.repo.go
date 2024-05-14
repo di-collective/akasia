@@ -98,6 +98,7 @@ func (repo *Repository[Model, ID]) List(ctx context.Context, opt *common.FilterO
 	} else if rows.Err() != nil {
 		return nil, fmt.Errorf("%w; %w", ErrExecutingStatement, rows.Err())
 	}
+	defer rows.Close()
 
 	var entities = make([]*Model, 0, limit)
 	for rows.Next() {
