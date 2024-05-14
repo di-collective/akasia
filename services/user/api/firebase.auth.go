@@ -15,29 +15,29 @@ func (rest *REST) FirebaseAuth(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	idToken := strings.TrimSpace(r.URL.Query().Get("idToken"))
 	if idToken == "" {
-		json.NewEncoder(w).Encode(dto.Object[any]{Error: "ID Token should not be empty"})
 		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(dto.Object[any]{Error: "ID Token should not be empty"})
 		return
 	}
 
 	fbaToken, err := rest.oauthVerifier.ValidateIDToken(ctx, idToken)
 	if err != nil {
-		json.NewEncoder(w).Encode(dto.Object[any]{Error: "Invalid ID Token"})
 		w.WriteHeader(http.StatusUnauthorized)
+		json.NewEncoder(w).Encode(dto.Object[any]{Error: "Invalid ID Token"})
 		return
 	}
 
 	signedInEmail, ok := fbaToken.Claims["email"].(string)
 	if !ok {
-		json.NewEncoder(w).Encode(dto.Object[any]{Error: "Unknown Email"})
 		w.WriteHeader(http.StatusUnauthorized)
+		json.NewEncoder(w).Encode(dto.Object[any]{Error: "Unknown Email"})
 		return
 	}
 
 	exists, err := rest.userService.IsHandleExists(ctx, signedInEmail)
 	if err != nil {
-		json.NewEncoder(w).Encode(dto.Object[any]{Error: "User Not Exist"})
 		w.WriteHeader(http.StatusUnauthorized)
+		json.NewEncoder(w).Encode(dto.Object[any]{Error: "User Not Exist"})
 		return
 	}
 
