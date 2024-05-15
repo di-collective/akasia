@@ -15,13 +15,16 @@ type User struct {
 }
 
 type Profile struct {
-	ID        string       `db:"id" goqu:"omitempty"`
-	UserID    string       `db:"user_id" goqu:"omitempty"`
-	MedicalID string       `db:"medical_id" goqu:"omitempty"`
-	FirstName string       `db:"first_name" goqu:"omitempty"`
-	LastName  string       `db:"last_name" goqu:"omitempty"`
-	Phone     string       `db:"phone" goqu:"omitempty"`
-	NIK       string       `db:"nik" goqu:"omitempty"`
-	Gender    string       `db:"gender" goqu:"omitempty"`
-	BirthDate sql.NullTime `db:"dob" goqu:"omitempty"`
+	ID          string       `db:"id" goqu:"omitempty"`
+	UserID      string       `db:"user_id" goqu:"omitempty"`
+	MedicalID   string       `db:"medical_id" goqu:"omitempty"`
+	FirstName   string       `db:"first_name" goqu:"omitempty"`
+	LastName    string       `db:"last_name" goqu:"omitempty"`
+	CountryCode string       `db:"country_code" goqu:"omitempty"`
+	Phone       string       `db:"phone" goqu:"omitempty"`
+	NIK         string       `db:"nik" goqu:"omitempty"`
+	Gender      string       `db:"gender" goqu:"omitempty"`
+	BirthDate   string       `db:"dob" goqu:"omitempty"`
+	CreatedAt   time.Time    `db:"created_at" goqu:"omitempty"`
+	DeletedAt   sql.NullTime `db:"deleted_at" goqu:"omitempty"`
 }

@@ -14,7 +14,7 @@ type views struct {
 var (
 	Tables = tables{
 		User:        "user",
-		Profile:     "string",
+		Profile:     "profile",
 		Message:     "message",
 		UserMessage: "user_message",
 	}
