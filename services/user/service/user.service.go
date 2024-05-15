@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"monorepo/internal/dto"
 	"monorepo/pkg/common"
@@ -92,3 +93,55 @@ func (service *UserService) RegisterUser(ctx context.Context, body *dto.RequestR
 func (service *UserService) ChangePassword(ctx context.Context) error { return nil }
 func (service *UserService) ResetPassword(ctx context.Context) error  { return nil }
 func (service *UserService) UpdateUser(ctx context.Context) error     { return nil }
+
+func (service *UserService) CreateProfile(ctx context.Context, body *dto.RequestCreateProfile) (*models.Profile, error) {
+	user, err := service.tables.user.List(ctx, &common.FilterOptions{
+		Sort:   []exp.Expression{goqu.I("id").Desc()},
+		Filter: []exp.Expression{goqu.C("id").Eq(body.UserID)},
+		Page:   1,
+		Limit:  1,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("%w; %w", ErrRepositoryQueryFail, err)
+	}
+
+	if len(user) == 0 {
+		err = errors.New("user does not exist")
+		return nil, err
+	}
+
+	existing, err := service.tables.profile.List(ctx, &common.FilterOptions{
+		Sort:   []exp.Expression{goqu.I("id").Desc()},
+		Filter: []exp.Expression{goqu.C("user_id").Eq(body.UserID)},
+		Page:   1,
+		Limit:  1,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("%w; %w", ErrRepositoryQueryFail, err)
+	}
+
+	if len(existing) > 0 {
+		err = errors.New("profile already exist")
+		return nil, err
+	}
+
+	newProfile := &models.Profile{
+		ID:          ulid.Make().String(),
+		UserID:      body.UserID,
+		MedicalID:   ulid.Make().String(),
+		FirstName:   body.FirstName,
+		LastName:    body.LastName,
+		CountryCode: body.CountryCode,
+		Phone:       body.Phone,
+		NIK:         body.NIK,
+		Gender:      body.Gender,
+		BirthDate:   body.BirthDate,
+		CreatedAt:   time.Now(),
+	}
+	err = service.tables.profile.Create(ctx, newProfile)
+	if err != nil {
+		return nil, fmt.Errorf("%w; %w", ErrRepositoryMutateFail, err)
+	}
+
+	return newProfile, nil
+}

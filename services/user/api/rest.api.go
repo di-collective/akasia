@@ -2,8 +2,10 @@ package api
 
 import (
 	"encoding/json"
+	"io"
 	"monorepo/internal/config"
 	"monorepo/internal/dto"
+	"monorepo/services/user/models"
 	"monorepo/services/user/service"
 	"net/http"
 	"time"
@@ -11,6 +13,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/oauth"
+	"github.com/go-playground/validator/v10"
 
 	"github.com/gorilla/schema"
 )
@@ -58,18 +61,64 @@ func (rest *REST) InitializeRoutes() {
 		r.Use(rest.oauthAuthorizer)
 
 		r.Post("/me", rest.MyCredential)
+		r.Post("/profile", rest.CreateProfile)
 	})
 }
 
 func (rest *REST) Healthcheck(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(dto.Object[any]{Data: nil, Message: "OK"})
-	w.WriteHeader(200)
+}
+
+func (rest *REST) CreateProfile(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	w.Header().Set("Content-Type", "application/json")
+
+	payload, err := io.ReadAll(r.Body)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(dto.Object[any]{Error: err.Error()})
+		return
+	}
+
+	claims := ctx.Value(oauth.ClaimsContext)
+	c, _ := json.Marshal(claims)
+	var fClaims dto.FirebaseClaims
+	json.Unmarshal(c, &fClaims)
+
+	var req dto.RequestCreateProfile
+	json.Unmarshal(payload, &req)
+
+	validate := validator.New()
+	err = validate.Struct(req)
+	if err != nil {
+		err = err.(validator.ValidationErrors)
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(dto.Object[any]{Error: err.Error()})
+		return
+	}
+
+	err = req.Validate()
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(dto.Object[any]{Error: err.Error()})
+		return
+	}
+
+	req.UserID = fClaims.UserID
+	data, err := rest.userService.CreateProfile(ctx, &req)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(dto.Object[any]{Error: err.Error(), Message: "Failed to Create Profile"})
+		return
+	}
+
+	json.NewEncoder(w).Encode(dto.Object[*models.Profile]{Data: &data, Message: "OK"})
 }
 
 func (rest *REST) MyCredential(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-
+	w.Header().Set("Content-Type", "application/json")
 	claims := ctx.Value(oauth.ClaimsContext)
 	json.NewEncoder(w).Encode(dto.Object[any]{Data: &claims, Message: "OK"})
-	w.WriteHeader(200)
 }
