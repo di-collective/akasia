@@ -27,30 +27,6 @@ Status Code | Value
 400 | Bad Request
 401 | Unauthorized
 
-## Logout
-Key | Value
--- | --
-Method | POST
-URL | /credentials/logout
-
-Query Params | Value
--- | --
-idToken | {idToken}
-
-**Headers**
-
-No Header
-
-**Body**
-
-No Body
-
-Status Code | Value
--- | --
-200 | Success
-400 | Bad Request
-401 | Unauthorized
-
 ## Create Profile
 Key | Value
 -- | --
@@ -71,6 +47,30 @@ phone | numeric. 9-12 charactes. not start with 0. example: 81212341234
 nik | numeric. 16 characters
 gender | string
 dob | string. format: yyyy-mm-dd
+
+Status Code | Value
+-- | --
+200 | Success
+400 | Bad Request
+401 | Unauthorized
+
+## Forgot Password
+Key | Value
+-- | --
+Method | POST
+URL | /credentials/forgot-password
+
+Query Params | Value
+-- | --
+idToken | {idToken}
+
+**Headers**
+
+No Header
+
+**Body**
+
+No Body
 
 Status Code | Value
 -- | --
