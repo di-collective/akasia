@@ -8,6 +8,7 @@ import (
 	"monorepo/pkg/common"
 	"monorepo/pkg/utils"
 	"monorepo/services/user/models"
+	"strings"
 	"time"
 
 	"github.com/doug-martin/goqu/v9"
@@ -94,7 +95,7 @@ func (service *UserService) ChangePassword(ctx context.Context) error { return n
 func (service *UserService) ResetPassword(ctx context.Context) error  { return nil }
 func (service *UserService) UpdateUser(ctx context.Context) error     { return nil }
 
-func (service *UserService) CreateProfile(ctx context.Context, body *dto.RequestCreateProfile) (*models.Profile, error) {
+func (service *UserService) CreateProfile(ctx context.Context, body *dto.RequestCreateProfile) (*dto.ResponseCreateProfile, error) {
 	user, err := service.tables.user.List(ctx, &common.FilterOptions{
 		Sort:   []exp.Expression{goqu.I("id").Desc()},
 		Filter: []exp.Expression{goqu.C("id").Eq(body.UserID)},
@@ -125,17 +126,17 @@ func (service *UserService) CreateProfile(ctx context.Context, body *dto.Request
 		return nil, err
 	}
 
+	name := strings.Fields(body.Name)
+
 	newProfile := &models.Profile{
 		ID:          ulid.Make().String(),
 		UserID:      body.UserID,
 		MedicalID:   ulid.Make().String(),
-		FirstName:   body.FirstName,
-		LastName:    body.LastName,
+		FirstName:   strings.Join(name[:len(name)-1], " "),
+		LastName:    name[len(name)-1],
 		CountryCode: body.CountryCode,
 		Phone:       body.Phone,
 		NIK:         body.NIK,
-		Gender:      body.Gender,
-		BirthDate:   body.BirthDate,
 		CreatedAt:   time.Now(),
 	}
 	err = service.tables.profile.Create(ctx, newProfile)
@@ -143,5 +144,15 @@ func (service *UserService) CreateProfile(ctx context.Context, body *dto.Request
 		return nil, fmt.Errorf("%w; %w", ErrRepositoryMutateFail, err)
 	}
 
-	return newProfile, nil
+	res := dto.ResponseCreateProfile{
+		ID:          newProfile.ID,
+		UserID:      newProfile.UserID,
+		MedicalID:   newProfile.MedicalID,
+		Name:        body.Name,
+		CountryCode: newProfile.CountryCode,
+		Phone:       newProfile.Phone,
+		NIK:         newProfile.NIK,
+	}
+
+	return &res, nil
 }

@@ -23,8 +23,6 @@ type Profile struct {
 	CountryCode string       `db:"country_code" goqu:"omitempty"`
 	Phone       string       `db:"phone" goqu:"omitempty"`
 	NIK         string       `db:"nik" goqu:"omitempty"`
-	Gender      string       `db:"gender" goqu:"omitempty"`
-	BirthDate   string       `db:"dob" goqu:"omitempty"`
 	CreatedAt   time.Time    `db:"created_at" goqu:"omitempty"`
 	DeletedAt   sql.NullTime `db:"deleted_at" goqu:"omitempty"`
 }
