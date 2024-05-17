@@ -5,7 +5,6 @@ import (
 	"io"
 	"monorepo/internal/config"
 	"monorepo/internal/dto"
-	"monorepo/services/user/models"
 	"monorepo/services/user/service"
 	"net/http"
 	"time"
@@ -113,7 +112,7 @@ func (rest *REST) CreateProfile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	json.NewEncoder(w).Encode(dto.Object[*models.Profile]{Data: &data, Message: "OK"})
+	json.NewEncoder(w).Encode(dto.Object[*dto.ResponseCreateProfile]{Data: &data, Message: "OK"})
 }
 
 func (rest *REST) MyCredential(w http.ResponseWriter, r *http.Request) {
