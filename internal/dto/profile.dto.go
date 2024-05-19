@@ -25,7 +25,7 @@ type ResponseCreateProfile struct {
 
 func (r RequestCreateProfile) Validate() error {
 	// validate phone
-	regex, err := regexp.Compile(`^[1-9].{9,12}$`)
+	regex, err := regexp.Compile(`^[1-9]{9,12}$`)
 	if err != nil {
 		return err
 	}
