@@ -16,6 +16,7 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/api/option"
+	"gopkg.in/gomail.v2"
 )
 
 func main() {
@@ -46,12 +47,21 @@ func main() {
 		Pass:    cfg.DbPass,
 	})
 
+	mailer := gomail.NewMessage()
+	dialer := gomail.NewDialer(
+		cfg.SMTPHost,
+		cfg.SMTPPort,
+		cfg.SMTPAuthEmail,
+		cfg.SMTPAuthPassword,
+	)
+
 	tbUser := repository.NewRepository[models.User, string](pgdb, repository.Tables.User)
 	tbProfile := repository.NewRepository[models.Profile, string](pgdb, repository.Tables.Profile)
 
 	restAPI := api.NewREST(
 		service.NewOauthVerifier(tbUser, fbaClient, cfg),
 		service.NewUserService(tbUser, tbProfile),
+		service.NewEmailService(dialer, mailer, tbUser, tbProfile),
 		cfg,
 	)
 

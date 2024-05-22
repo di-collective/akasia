@@ -22,6 +22,7 @@ type REST struct {
 
 	decoder         *schema.Decoder
 	userService     *service.UserService
+	emailService    *service.EmailService
 	oauthServer     *oauth.BearerServer
 	oauthVerifier   *service.OauthVerifier
 	oauthAuthorizer func(next http.Handler) http.Handler
@@ -31,6 +32,7 @@ type REST struct {
 func NewREST(
 	oauthVerifier *service.OauthVerifier,
 	userService *service.UserService,
+	emailService *service.EmailService,
 	env *config.Environment,
 ) *REST {
 	r := chi.NewRouter()
@@ -45,6 +47,7 @@ func NewREST(
 		Router:          r,
 		decoder:         schema.NewDecoder(),
 		userService:     userService,
+		emailService:    emailService,
 		oauthServer:     oauth.NewBearerServer(env.JWTSecret, time.Hour*4, oauthVerifier, nil),
 		oauthAuthorizer: oauth.Authorize(env.JWTSecret, nil),
 		oauthVerifier:   oauthVerifier,
@@ -56,6 +59,7 @@ func (rest *REST) InitializeRoutes() {
 	rest.Router.Get("/", rest.Healthcheck)
 	rest.Router.Post("/credentials/login", rest.oauthServer.UserCredentials)
 	rest.Router.Post("/credentials/firebase-auth", rest.FirebaseAuth)
+	rest.Router.Post("/credentials/forgot-password", rest.ForgotPassword)
 	rest.Router.Group(func(r chi.Router) {
 		r.Use(rest.oauthAuthorizer)
 
