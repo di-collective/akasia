@@ -10,3 +10,9 @@ type RequestRegisterUser struct {
 type RequestForgotPassword struct {
 	Email string `json:"email" validate:"required,email"`
 }
+
+type RequestUpdatePassword struct {
+	UserID     string `json:"user_id" validate:"required"`
+	ResetToken string `json:"reset_token" validate:"required"`
+	Password   string `json:"password" validate:"required_if=Provider email,min=12,max=128"`
+}

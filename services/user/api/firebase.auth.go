@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/go-playground/validator/v10"
 	"github.com/sirupsen/logrus"
 )
 
@@ -112,6 +113,15 @@ func (rest *REST) UpdatePassword(w http.ResponseWriter, r *http.Request) {
 
 	var request dto.RequestUpdatePassword
 	json.Unmarshal(payload, &request)
+
+	validate := validator.New()
+	err = validate.Struct(request)
+	if err != nil {
+		err = err.(validator.ValidationErrors)
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(dto.Object[any]{Error: err.Error()})
+		return
+	}
 
 	err = rest.emailService.UpdatePassword(ctx, rest.env, &request)
 	if err != nil {

@@ -83,23 +83,6 @@ func (service *EmailService) ResetPassword(ctx context.Context, env *config.Envi
 
 	name := fmt.Sprintf("%s %s", existing[0].FirstName, existing[0].LastName)
 
-	// generate link
-	// actionCodeSettings := &auth.ActionCodeSettings{
-	// 	URL:                   "akasia365-clinic.web.app",
-	// 	HandleCodeInApp:       true,
-	// 	IOSBundleID:           "com.example.ios", // akasia365android.com
-	// 	AndroidPackageName:    "com.example.android",
-	// 	AndroidInstallApp:     true,
-	// 	AndroidMinimumVersion: "12",
-	// 	DynamicLinkDomain:     "coolapp.page.link",
-	// }
-
-	// link, err := service.fbaClient.PasswordResetLinkWithSettings(ctx, body.Email, actionCodeSettings)
-	// if err != nil {
-	// 	log.Fatalf("error generating email link: %v\n", err)
-	// 	return err
-	// }
-
 	token := utils.RandAlphanumericString(16)
 	rp := &models.ResetPassword{
 		ID:         ulid.Make().String(),
@@ -119,7 +102,7 @@ func (service *EmailService) ResetPassword(ctx context.Context, env *config.Envi
 		TemplateEmail: "template/forgot-password.html",
 		Body: dto.EmailBody{
 			UserName:         name,
-			ResetPasswordUrl: fmt.Sprintf("%s/%s?reset-token=%s", env.ResetPasswordUrl, user[0].ID, token), // TODO: change reset link
+			ResetPasswordUrl: fmt.Sprintf("%s?uid=%s&reset-token=%s", env.ResetPasswordUrl, user[0].ID, token),
 			CsUrl:            env.CsUrl,
 		},
 	}
@@ -182,7 +165,7 @@ func (service *EmailService) UpdatePassword(ctx context.Context, env *config.Env
 
 	logReset, err := service.tables.resetPassword.List(ctx, &common.FilterOptions{
 		Sort:   []exp.Expression{goqu.I("created_at").Desc()},
-		Filter: []exp.Expression{goqu.C("user_id").Eq(body.UserID)},
+		Filter: []exp.Expression{goqu.C("user_id").Eq(body.UserID), goqu.C("is_used").Eq(false)},
 		Page:   1,
 		Limit:  1,
 	})
@@ -214,11 +197,17 @@ func (service *EmailService) UpdatePassword(ctx context.Context, env *config.Env
 	// update firebase
 	params := (&auth.UserToUpdate{}).
 		Password(body.Password)
-	up, err := service.fbaClient.UpdateUser(ctx, u.UID, params)
+	_, err = service.fbaClient.UpdateUser(ctx, u.UID, params)
 	if err != nil {
 		return err
 	}
-	fmt.Println(up)
+
+	// update flag is_used
+	logReset[0].IsUsed = true
+	err = service.tables.resetPassword.Update(ctx, logReset[0].ID, logReset[0])
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
