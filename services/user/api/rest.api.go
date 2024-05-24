@@ -64,7 +64,8 @@ func (rest *REST) InitializeRoutes() {
 	rest.Router.Group(func(r chi.Router) {
 		r.Use(rest.oauthAuthorizer)
 
-		r.Post("/me", rest.MyCredential)
+		r.Get("/me", rest.MyCredential)
+		r.Get("/profile", rest.GetProfile)
 		r.Post("/profile", rest.CreateProfile)
 	})
 }
@@ -125,4 +126,34 @@ func (rest *REST) MyCredential(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	claims := ctx.Value(oauth.ClaimsContext)
 	json.NewEncoder(w).Encode(dto.Object[any]{Data: &claims, Message: "OK"})
+}
+
+func (rest *REST) GetProfile(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	w.Header().Set("Content-Type", "application/json")
+	claims := ctx.Value(oauth.ClaimsContext)
+
+	fc := dto.FirebaseClaims{}
+	c, err := json.Marshal(claims)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(dto.Object[any]{Error: err.Error()})
+		return
+	}
+
+	err = json.Unmarshal(c, &fc)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(dto.Object[any]{Error: err.Error()})
+		return
+	}
+
+	data, err := rest.userService.GetProfile(ctx, &fc)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(dto.Object[any]{Error: err.Error(), Message: "Failed to Get Profile"})
+		return
+	}
+
+	json.NewEncoder(w).Encode(dto.Object[any]{Data: &data, Message: "OK"})
 }

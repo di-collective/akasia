@@ -27,6 +27,26 @@ Status Code | Value
 400 | Bad Request
 401 | Unauthorized
 
+## Get Firebase Claims
+Key | Value
+-- | --
+Method | GET
+URL | /me
+
+Headers | Value
+-- | --
+Authorization | bearer {token}
+
+Body | -
+-- | --
+No Body | -
+
+Status Code | Value
+-- | --
+200 | Success
+400 | Bad Request
+401 | Unauthorized
+
 ## Create Profile
 Key | Value
 -- | --
@@ -51,19 +71,60 @@ Status Code | Value
 400 | Bad Request
 401 | Unauthorized
 
+## Get Profile
+Key | Value
+-- | --
+Method | GET
+URL | /profile
+
+Headers | Value
+-- | --
+Authorization | bearer {token}
+
+Body | -
+-- | --
+No Body | -
+
+Status Code | Value
+-- | --
+200 | Success
+400 | Bad Request
+401 | Unauthorized
+
 ## Forgot Password
 Key | Value
 -- | --
 Method | POST
 URL | /credentials/forgot-password
 
-**Headers**
-
-No Header
+Headers | -
+-- | --
+No Header | -
 
 Body | Description
 -- | --
 email | string
+
+Status Code | Value
+-- | --
+200 | Success
+400 | Bad Request
+
+## Update Password
+Key | Value
+-- | --
+Method | POST
+URL | /credentials/update-password
+
+Headers | -
+-- | --
+No Header | -
+
+Body | Description
+-- | --
+user_id | string
+reset_token | string
+password | string
 
 Status Code | Value
 -- | --
