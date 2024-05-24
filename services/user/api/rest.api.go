@@ -60,6 +60,7 @@ func (rest *REST) InitializeRoutes() {
 	rest.Router.Post("/credentials/login", rest.oauthServer.UserCredentials)
 	rest.Router.Post("/credentials/firebase-auth", rest.FirebaseAuth)
 	rest.Router.Post("/credentials/forgot-password", rest.ForgotPassword)
+	rest.Router.Post("/credentials/update-password", rest.UpdatePassword)
 	rest.Router.Group(func(r chi.Router) {
 		r.Use(rest.oauthAuthorizer)
 

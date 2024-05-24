@@ -8,35 +8,45 @@ import (
 	"monorepo/internal/config"
 	"monorepo/internal/dto"
 	"monorepo/pkg/common"
+	"monorepo/pkg/utils"
 	"monorepo/services/user/models"
 	"text/template"
+	"time"
 
+	"firebase.google.com/go/v4/auth"
 	"github.com/doug-martin/goqu/v9"
 	"github.com/doug-martin/goqu/v9/exp"
+	"github.com/oklog/ulid/v2"
 	"gopkg.in/gomail.v2"
 )
 
 func NewEmailService(
 	dialer *gomail.Dialer,
 	mailer *gomail.Message,
+	fbaClient *auth.Client,
 	tbUser common.Repository[models.User, string],
 	tbProfile common.Repository[models.Profile, string],
+	tbResetPassword common.Repository[models.ResetPassword, string],
 ) *EmailService {
 	service := &EmailService{}
 	service.dialer = dialer
 	service.mailer = mailer
+	service.fbaClient = fbaClient
 	service.tables.user = tbUser
 	service.tables.profile = tbProfile
+	service.tables.resetPassword = tbResetPassword
 
 	return service
 }
 
 type EmailService struct {
-	dialer *gomail.Dialer
-	mailer *gomail.Message
-	tables struct {
-		user    common.Repository[models.User, string]
-		profile common.Repository[models.Profile, string]
+	dialer    *gomail.Dialer
+	mailer    *gomail.Message
+	fbaClient *auth.Client
+	tables    struct {
+		user          common.Repository[models.User, string]
+		profile       common.Repository[models.Profile, string]
+		resetPassword common.Repository[models.ResetPassword, string]
 	}
 }
 
@@ -73,6 +83,35 @@ func (service *EmailService) ResetPassword(ctx context.Context, env *config.Envi
 
 	name := fmt.Sprintf("%s %s", existing[0].FirstName, existing[0].LastName)
 
+	// generate link
+	// actionCodeSettings := &auth.ActionCodeSettings{
+	// 	URL:                   "akasia365-clinic.web.app",
+	// 	HandleCodeInApp:       true,
+	// 	IOSBundleID:           "com.example.ios", // akasia365android.com
+	// 	AndroidPackageName:    "com.example.android",
+	// 	AndroidInstallApp:     true,
+	// 	AndroidMinimumVersion: "12",
+	// 	DynamicLinkDomain:     "coolapp.page.link",
+	// }
+
+	// link, err := service.fbaClient.PasswordResetLinkWithSettings(ctx, body.Email, actionCodeSettings)
+	// if err != nil {
+	// 	log.Fatalf("error generating email link: %v\n", err)
+	// 	return err
+	// }
+
+	token := utils.RandAlphanumericString(16)
+	rp := &models.ResetPassword{
+		ID:         ulid.Make().String(),
+		UserID:     user[0].ID,
+		ResetToken: token,
+		CreatedAt:  time.Now(),
+	}
+	err = service.tables.resetPassword.Create(ctx, rp)
+	if err != nil {
+		return fmt.Errorf("%w; %w", ErrRepositoryMutateFail, err)
+	}
+
 	sendEmail := dto.Email{
 		From:          env.SMTPAuthEmail,
 		To:            body.Email,
@@ -80,7 +119,7 @@ func (service *EmailService) ResetPassword(ctx context.Context, env *config.Envi
 		TemplateEmail: "template/forgot-password.html",
 		Body: dto.EmailBody{
 			UserName:         name,
-			ResetPasswordUrl: "#",
+			ResetPasswordUrl: fmt.Sprintf("%s/%s?reset-token=%s", env.ResetPasswordUrl, user[0].ID, token), // TODO: change reset link
 			CsUrl:            env.CsUrl,
 		},
 	}
@@ -108,4 +147,78 @@ func (service *EmailService) ParseTemplate(templateFileName string, data interfa
 		return "", err
 	}
 	return buf.String(), nil
+}
+
+func (service *EmailService) UpdatePassword(ctx context.Context, env *config.Environment, body *dto.RequestUpdatePassword) error {
+	user, err := service.tables.user.List(ctx, &common.FilterOptions{
+		Sort:   []exp.Expression{goqu.I("id").Desc()},
+		Filter: []exp.Expression{goqu.C("id").Eq(body.UserID)},
+		Page:   1,
+		Limit:  1,
+	})
+	if err != nil {
+		return err
+	}
+
+	if len(user) == 0 {
+		err = errors.New("user does not exist")
+		return err
+	}
+
+	existing, err := service.tables.profile.List(ctx, &common.FilterOptions{
+		Sort:   []exp.Expression{goqu.I("id").Desc()},
+		Filter: []exp.Expression{goqu.C("user_id").Eq(user[0].ID)},
+		Page:   1,
+		Limit:  1,
+	})
+	if err != nil {
+		return err
+	}
+
+	if len(existing) == 0 {
+		err = errors.New("profile already exist")
+		return err
+	}
+
+	logReset, err := service.tables.resetPassword.List(ctx, &common.FilterOptions{
+		Sort:   []exp.Expression{goqu.I("created_at").Desc()},
+		Filter: []exp.Expression{goqu.C("user_id").Eq(body.UserID)},
+		Page:   1,
+		Limit:  1,
+	})
+	if err != nil {
+		return err
+	}
+
+	if len(logReset) == 0 {
+		err = errors.New("request not found")
+		return err
+	}
+
+	if time.Now().After(logReset[0].CreatedAt.Add(time.Hour * 1)) {
+		err = errors.New("token expired")
+		return err
+	}
+
+	if body.ResetToken != logReset[0].ResetToken {
+		err = errors.New("token unknown")
+		return err
+	}
+
+	// get user by email
+	u, err := service.fbaClient.GetUserByEmail(ctx, user[0].Handle)
+	if err != nil {
+		return err
+	}
+
+	// update firebase
+	params := (&auth.UserToUpdate{}).
+		Password(body.Password)
+	up, err := service.fbaClient.UpdateUser(ctx, u.UID, params)
+	if err != nil {
+		return err
+	}
+	fmt.Println(up)
+
+	return nil
 }

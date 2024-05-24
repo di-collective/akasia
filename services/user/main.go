@@ -57,11 +57,12 @@ func main() {
 
 	tbUser := repository.NewRepository[models.User, string](pgdb, repository.Tables.User)
 	tbProfile := repository.NewRepository[models.Profile, string](pgdb, repository.Tables.Profile)
+	tbResetPassword := repository.NewRepository[models.ResetPassword, string](pgdb, repository.Tables.ResetPassword)
 
 	restAPI := api.NewREST(
 		service.NewOauthVerifier(tbUser, fbaClient, cfg),
 		service.NewUserService(tbUser, tbProfile),
-		service.NewEmailService(dialer, mailer, tbUser, tbProfile),
+		service.NewEmailService(dialer, mailer, fbaClient, tbUser, tbProfile, tbResetPassword),
 		cfg,
 	)
 

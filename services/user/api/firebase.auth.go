@@ -98,3 +98,28 @@ func (rest *REST) ForgotPassword(w http.ResponseWriter, r *http.Request) {
 
 	json.NewEncoder(w).Encode(dto.Object[any]{Message: "Your request has been sent to your email"})
 }
+
+func (rest *REST) UpdatePassword(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	w.Header().Set("Content-Type", "application/json")
+
+	payload, err := io.ReadAll(r.Body)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(dto.Object[any]{Error: "Failed to Parse Payload"})
+		return
+	}
+
+	var request dto.RequestUpdatePassword
+	json.Unmarshal(payload, &request)
+
+	err = rest.emailService.UpdatePassword(ctx, rest.env, &request)
+	if err != nil {
+		logrus.Errorf("failed to update password: %s; err: %s", request.UserID, err.Error())
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(dto.Object[any]{Error: err.Error(), Message: "Failed to Parse Payload"})
+		return
+	}
+
+	json.NewEncoder(w).Encode(dto.Object[any]{Message: "Your password has been updated"})
+}
