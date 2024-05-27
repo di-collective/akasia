@@ -1,10 +1,11 @@
 package repository
 
 type tables struct {
-	User        string
-	Profile     string
-	Message     string
-	UserMessage string
+	User          string
+	Profile       string
+	Message       string
+	UserMessage   string
+	ResetPassword string
 }
 
 type views struct {
@@ -13,10 +14,11 @@ type views struct {
 
 var (
 	Tables = tables{
-		User:        "user",
-		Profile:     "profile",
-		Message:     "message",
-		UserMessage: "user_message",
+		User:          "user",
+		Profile:       "profile",
+		Message:       "message",
+		UserMessage:   "user_message",
+		ResetPassword: "reset_password",
 	}
 	Views = views{
 		UserMessage: "view_user_message",

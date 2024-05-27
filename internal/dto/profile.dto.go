@@ -23,9 +23,20 @@ type ResponseCreateProfile struct {
 	NIK         string `json:"nik,omitempty"`
 }
 
+type ResponseGetProfile struct {
+	ID          string `json:"id,omitempty"`
+	UserID      string `json:"user_id,omitempty"`
+	Role        string `json:"role,omitempty"`
+	MedicalID   string `json:"medical_id,omitempty"`
+	Name        string `json:"name,omitempty"`
+	CountryCode string `json:"country_code,omitempty"`
+	Phone       string `json:"phone,omitempty"`
+	NIK         string `json:"nik,omitempty"`
+}
+
 func (r RequestCreateProfile) Validate() error {
 	// validate phone
-	regex, err := regexp.Compile(`^[1-9].{9,12}$`)
+	regex, err := regexp.Compile(`^[1-9]{9,12}$`)
 	if err != nil {
 		return err
 	}

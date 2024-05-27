@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"monorepo/internal/dto"
@@ -153,6 +154,39 @@ func (service *UserService) CreateProfile(ctx context.Context, body *dto.Request
 		Phone:       newProfile.Phone,
 		NIK:         newProfile.NIK,
 	}
+
+	return &res, nil
+}
+
+func (service *UserService) GetProfile(ctx context.Context, body *dto.FirebaseClaims) (any, error) {
+	profile, err := service.tables.profile.List(ctx, &common.FilterOptions{
+		Sort:   []exp.Expression{goqu.I("id").Desc()},
+		Filter: []exp.Expression{goqu.C("user_id").Eq(body.UserID)},
+		Page:   1,
+		Limit:  1,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("%w; %w", ErrRepositoryQueryFail, err)
+	}
+
+	if len(profile) == 0 {
+		err = errors.New("profile not found")
+		return nil, err
+	}
+
+	res := dto.ResponseGetProfile{}
+	p, err := json.Marshal(profile[0])
+	if err != nil {
+		return nil, err
+	}
+
+	err = json.Unmarshal(p, &res)
+	if err != nil {
+		return nil, err
+	}
+
+	res.Role = body.Role
+	res.Name = fmt.Sprintf("%s %s", profile[0].FirstName, profile[0].LastName)
 
 	return &res, nil
 }
