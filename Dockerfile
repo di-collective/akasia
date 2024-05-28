@@ -15,6 +15,10 @@ RUN apk --no-cache add ca-certificates && update-ca-certificates
 RUN apk add --no-cache tzdata 
 WORKDIR /app
 COPY --from=builder /app/service .
+
+RUN mkdir ./templates
+ARG DIR
+COPY --from=builder /app/services/$DIR/template/*.html ./templates
 ENV TZ=Asia/Jakarta
 #Expose port
 EXPOSE 80
