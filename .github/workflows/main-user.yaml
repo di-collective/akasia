@@ -26,7 +26,7 @@ jobs:
     - name: Build and push image
       env:
         IMAGE_TAG: main
-        CONFIG_FILE: ${{ vars.FIREBASE_JSON }}
+        FIREBASE_JSON: ${{ vars.FIREBASE_JSON }}
       shell: bash
       run: |
         echo "$FIREBASE_JSON" >> ./services/user/config/service-account.json
