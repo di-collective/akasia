@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"database/sql"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -137,7 +138,7 @@ func (service *UserService) CreateProfile(ctx context.Context, body *dto.Request
 		LastName:    name[len(name)-1],
 		CountryCode: body.CountryCode,
 		Phone:       body.Phone,
-		NIK:         body.NIK,
+		NIK:         sql.NullString{String: body.NIK, Valid: true},
 		CreatedAt:   time.Now(),
 	}
 	err = service.tables.profile.Create(ctx, newProfile)
@@ -152,7 +153,7 @@ func (service *UserService) CreateProfile(ctx context.Context, body *dto.Request
 		Name:        body.Name,
 		CountryCode: newProfile.CountryCode,
 		Phone:       newProfile.Phone,
-		NIK:         newProfile.NIK,
+		NIK:         newProfile.NIK.String,
 	}
 
 	return &res, nil
