@@ -18,7 +18,7 @@ jobs:
     
     - name: setup firebase main
       run: |
-        echo "$FIREBASE_JSON" >> /services/user/config/service-account.json
+        echo "$FIREBASE_JSON" >> ./services/user/config/service-account.json
       shell: bash
       env:
         CONFIG_FILE: ${{ vars.FIREBASE_JSON }}
