@@ -15,6 +15,13 @@ jobs:
     # Setting up Docker Builder
     - name: Set up Docker Builder
       uses: docker/setup-buildx-action@v3
+    
+    - name: setup firebase main
+      run: |
+        echo "$FIREBASE_JSON" >> /app/services/$DIR/config/service-account.json
+      shell: bash
+      env:
+        CONFIG_FILE: ${{ vars.FIREBASE_JSON }}
 
     #login alibaba Container Registry
     - name: Login to ACR

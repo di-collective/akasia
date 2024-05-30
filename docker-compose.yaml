@@ -1,0 +1,11 @@
+version: '3.7'
+services:
+  akasia-v3-2:
+    image: docker.io/library/akasia:v4
+    # command: /nsqlookupd  
+    ports:
+      - "8000:80"
+    environment: 
+      - TZ=Asia/Jakarta
+      - DB_SSL_MODE=disable
+      

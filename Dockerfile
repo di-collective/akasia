@@ -16,8 +16,13 @@ RUN apk add --no-cache tzdata
 WORKDIR /app
 COPY --from=builder /app/service .
 
-RUN mkdir ./templates
 ARG DIR
+# Copy the Pre-built binary file from the previous stage
+RUN mkdir ./config
+COPY --from=builder /app/services/$DIR/config/service-account.json ./config
+
+ARG DIR
+RUN mkdir ./templates
 COPY --from=builder /app/services/$DIR/template/*.html ./templates
 ENV TZ=Asia/Jakarta
 #Expose port
