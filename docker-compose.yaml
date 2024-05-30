@@ -8,4 +8,3 @@ services:
     environment: 
       - TZ=Asia/Jakarta
       - DB_SSL_MODE=disable
-      
