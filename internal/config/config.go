@@ -15,6 +15,7 @@ type Environment struct {
 	SMTPPort         int    `env:"SMTP_PORT" envDefault:"465"`
 	SMTPAuthEmail    string `env:"SMTP_AUTH_EMAIL" envDefault:"no-reply@edufund.co.id"`
 	SMTPAuthPassword string `env:"SMTP_AUTH_PASSWORD" envDefault:"5PHT57g5YUxqgPHMa"`
-	CsUrl            string `env:"CS_URL" envDefault:"customer.care@edufund.co.id"`
+	CsMail           string `env:"CS_MAIL" envDefault:"customer.care@edufund.co.id"`
 	ResetPasswordUrl string `env:"RESET_PASSWORD_URL" envDefault:"https://edufund.co.id"`
+	DirPath          string `env:"DIR_PATH" envDefault:"/User/template"`
 }
