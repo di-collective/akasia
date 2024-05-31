@@ -99,11 +99,11 @@ func (service *EmailService) ResetPassword(ctx context.Context, env *config.Envi
 		From:          env.SMTPAuthEmail,
 		To:            body.Email,
 		Subject:       "Reset Password",
-		TemplateEmail: "template/forgot-password.html",
+		TemplateEmail: fmt.Sprintf("%s/forgot-password.html", env.DirPath),
 		Body: dto.EmailBody{
 			UserName:         name,
 			ResetPasswordUrl: fmt.Sprintf("%s?uid=%s&reset-token=%s", env.ResetPasswordUrl, user[0].ID, token),
-			CsUrl:            env.CsUrl,
+			CsMail:           env.CsMail,
 		},
 	}
 

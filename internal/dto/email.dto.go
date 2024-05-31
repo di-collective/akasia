@@ -11,5 +11,5 @@ type Email struct {
 type EmailBody struct {
 	UserName         string `json:"user_name,omitempty"`
 	ResetPasswordUrl string `json:"reset_password_url,omitempty"`
-	CsUrl            string `json:"cs_url,omitempty"`
+	CsMail           string `json:"cs_mail,omitempty"`
 }
