@@ -22,7 +22,7 @@ RUN mkdir ./config
 COPY --from=builder /app/services/$DIR/config/service-account.json ./config
 
 ARG DIR
-RUN mkdir ./templates
+RUN mkdir ./template
 COPY --from=builder /app/services/$DIR/template/*.html ./template
 ENV TZ=Asia/Jakarta
 #Expose port
