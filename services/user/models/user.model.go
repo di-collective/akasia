@@ -22,7 +22,7 @@ type Profile struct {
 	LastName    string       `db:"last_name" json:"last_name" goqu:"omitempty"`
 	CountryCode string       `db:"country_code" json:"country_code" goqu:"omitempty"`
 	Phone       string       `db:"phone" json:"phone" goqu:"omitempty"`
-	NIK         string       `db:"nik" json:"nik" goqu:"omitempty"`
+	NIK         *string      `db:"nik" json:"nik" goqu:"omitempty"`
 	CreatedAt   time.Time    `db:"created_at" json:"created_at" goqu:"omitempty"`
 	DeletedAt   sql.NullTime `db:"deleted_at" json:"deleted_at" goqu:"omitempty"`
 }

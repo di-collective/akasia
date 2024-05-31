@@ -23,7 +23,7 @@ COPY --from=builder /app/services/$DIR/config/service-account.json ./config
 
 ARG DIR
 RUN mkdir ./templates
-COPY --from=builder /app/services/$DIR/template/*.html ./templates
+COPY --from=builder /app/services/$DIR/template/*.html ./template
 ENV TZ=Asia/Jakarta
 #Expose port
 EXPOSE 80
