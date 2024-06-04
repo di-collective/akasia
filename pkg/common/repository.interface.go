@@ -9,7 +9,7 @@ import (
 
 type FilterOptions struct {
 	Filter []exp.Expression
-	Sort   []exp.Expression
+	Sort   []exp.OrderedExpression
 	Select []any
 	Page   int
 	Limit  int

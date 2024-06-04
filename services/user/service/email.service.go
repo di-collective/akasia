@@ -52,7 +52,7 @@ type EmailService struct {
 
 func (service *EmailService) ResetPassword(ctx context.Context, env *config.Environment, body *dto.RequestForgotPassword) error {
 	user, err := service.tables.user.List(ctx, &common.FilterOptions{
-		Sort:   []exp.Expression{goqu.I("id").Desc()},
+		Sort:   []exp.OrderedExpression{goqu.I("id").Desc()},
 		Filter: []exp.Expression{goqu.C("handle").Eq(body.Email)},
 		Page:   1,
 		Limit:  1,
@@ -67,7 +67,7 @@ func (service *EmailService) ResetPassword(ctx context.Context, env *config.Envi
 	}
 
 	existing, err := service.tables.profile.List(ctx, &common.FilterOptions{
-		Sort:   []exp.Expression{goqu.I("id").Desc()},
+		Sort:   []exp.OrderedExpression{goqu.I("id").Desc()},
 		Filter: []exp.Expression{goqu.C("user_id").Eq(user[0].ID)},
 		Page:   1,
 		Limit:  1,
@@ -134,7 +134,7 @@ func (service *EmailService) ParseTemplate(templateFileName string, data interfa
 
 func (service *EmailService) UpdatePassword(ctx context.Context, env *config.Environment, body *dto.RequestUpdatePassword) error {
 	user, err := service.tables.user.List(ctx, &common.FilterOptions{
-		Sort:   []exp.Expression{goqu.I("id").Desc()},
+		Sort:   []exp.OrderedExpression{goqu.I("id").Desc()},
 		Filter: []exp.Expression{goqu.C("id").Eq(body.UserID)},
 		Page:   1,
 		Limit:  1,
@@ -149,7 +149,7 @@ func (service *EmailService) UpdatePassword(ctx context.Context, env *config.Env
 	}
 
 	existing, err := service.tables.profile.List(ctx, &common.FilterOptions{
-		Sort:   []exp.Expression{goqu.I("id").Desc()},
+		Sort:   []exp.OrderedExpression{goqu.I("id").Desc()},
 		Filter: []exp.Expression{goqu.C("user_id").Eq(user[0].ID)},
 		Page:   1,
 		Limit:  1,
@@ -164,7 +164,7 @@ func (service *EmailService) UpdatePassword(ctx context.Context, env *config.Env
 	}
 
 	logReset, err := service.tables.resetPassword.List(ctx, &common.FilterOptions{
-		Sort:   []exp.Expression{goqu.I("created_at").Desc()},
+		Sort:   []exp.OrderedExpression{goqu.I("created_at").Desc()}, // CHECK
 		Filter: []exp.Expression{goqu.C("user_id").Eq(body.UserID), goqu.C("is_used").Eq(false)},
 		Page:   1,
 		Limit:  1,
