@@ -82,6 +82,7 @@ func (repo *Repository[Model, ID]) List(ctx context.Context, opt *common.FilterO
 		From(repo.tableName).
 		Where(filter...).
 		Select(opt.Select...).
+		Order(opt.Sort...).
 		Offset(offset).
 		Limit(limit).
 		ToSQL()

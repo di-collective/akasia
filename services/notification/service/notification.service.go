@@ -66,7 +66,7 @@ func (service *NotificationService) ListMessages(ctx context.Context, query *dto
 	// 3. Pass over to repository layer
 	messages, err := service.tables.message.List(ctx, &common.FilterOptions{
 		Filter: filter,
-		Sort:   []exp.Expression{goqu.I("id").Desc()},
+		Sort:   []exp.OrderedExpression{goqu.I("id").Desc()},
 	})
 	if err != nil {
 		return nil, fmt.Errorf("%w; %w", ErrRepositoryQueryFail, err)
@@ -138,7 +138,7 @@ func (service *NotificationService) UpdateMessage(ctx context.Context, id string
 
 func (service *NotificationService) ListUserMessages(ctx context.Context, userId string) ([]*models.ViewUserMessage, error) {
 	messages, err := service.views.userMessage.List(ctx, &common.FilterOptions{
-		Sort:   []exp.Expression{goqu.I("id").Desc()},
+		Sort:   []exp.OrderedExpression{goqu.I("id").Desc()},
 		Select: []any{"message_id", "message_content", "read_at"},
 		Filter: []exp.Expression{
 			goqu.Or(
@@ -159,7 +159,7 @@ func (service *NotificationService) ListUserMessages(ctx context.Context, userId
 
 func (service *NotificationService) GetUserMessage(ctx context.Context, userId, messageId string) (*models.ViewUserMessage, error) {
 	messages, err := service.views.userMessage.List(ctx, &common.FilterOptions{
-		Sort:   []exp.Expression{goqu.I("id").Desc()},
+		Sort:   []exp.OrderedExpression{goqu.I("id").Desc()},
 		Select: []any{"message_id", "message_content", "read_at"},
 		Filter: []exp.Expression{
 			goqu.C("message_id").Eq(messageId),

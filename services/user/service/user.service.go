@@ -54,7 +54,7 @@ func (service *UserService) IsHandleExists(ctx context.Context, handle string) (
 
 func (service *UserService) RegisterUser(ctx context.Context, body *dto.RequestRegisterUser) (*models.User, error) {
 	existing, err := service.tables.user.List(ctx, &common.FilterOptions{
-		Sort:   []exp.Expression{goqu.I("id").Desc()},
+		Sort:   []exp.OrderedExpression{goqu.I("id").Desc()},
 		Filter: []exp.Expression{goqu.C("handle").Eq(body.Email)},
 		Page:   1,
 		Limit:  1,
@@ -98,7 +98,7 @@ func (service *UserService) UpdateUser(ctx context.Context) error     { return n
 
 func (service *UserService) CreateProfile(ctx context.Context, body *dto.RequestCreateProfile) (*dto.ResponseCreateProfile, error) {
 	user, err := service.tables.user.List(ctx, &common.FilterOptions{
-		Sort:   []exp.Expression{goqu.I("id").Desc()},
+		Sort:   []exp.OrderedExpression{goqu.I("id").Desc()},
 		Filter: []exp.Expression{goqu.C("id").Eq(body.UserID)},
 		Page:   1,
 		Limit:  1,
@@ -113,7 +113,7 @@ func (service *UserService) CreateProfile(ctx context.Context, body *dto.Request
 	}
 
 	existing, err := service.tables.profile.List(ctx, &common.FilterOptions{
-		Sort:   []exp.Expression{goqu.I("id").Desc()},
+		Sort:   []exp.OrderedExpression{goqu.I("id").Desc()},
 		Filter: []exp.Expression{goqu.C("user_id").Eq(body.UserID)},
 		Page:   1,
 		Limit:  1,
@@ -160,7 +160,7 @@ func (service *UserService) CreateProfile(ctx context.Context, body *dto.Request
 
 func (service *UserService) GetProfile(ctx context.Context, body *dto.FirebaseClaims) (any, error) {
 	profile, err := service.tables.profile.List(ctx, &common.FilterOptions{
-		Sort:   []exp.Expression{goqu.I("id").Desc()},
+		Sort:   []exp.OrderedExpression{goqu.I("id").Desc()},
 		Filter: []exp.Expression{goqu.C("user_id").Eq(body.UserID)},
 		Page:   1,
 		Limit:  1,
