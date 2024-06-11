@@ -38,13 +38,13 @@ type ResponseGetProfile struct {
 type RequestUpdateProfile struct {
 	Age           string    `json:"age,omitempty"`
 	DOB           time.Time `json:"dob,omitempty"`
-	Sex           string    `json:"sex,omitempty"`
+	Sex           string    `json:"sex,omitempty" validate:"omitempty,oneof=Male Female"`
 	BloodType     string    `json:"blood_type,omitempty"`
 	Weight        float64   `json:"weight,omitempty"`
 	Height        float64   `json:"height,omitempty"`
 	ActivityLevel string    `json:"activity_level,omitempty"`
 	Allergies     string    `json:"allergies,omitempty"`
-	ECRelation    string    `json:"ec_relation,omitempty"`
+	ECRelation    string    `json:"ec_relation,omitempty" validate:"omitempty,oneof=Wife Husband Mother Father Sister Brother Aunt Uncle Grandmother Grandfather Cousin Friend Spouse Child Other"`
 	ECName        string    `json:"ec_name,omitempty"`
 	ECCountryCode string    `json:"ec_country_code,omitempty"`
 	ECPhone       string    `json:"ec_phone,omitempty"`

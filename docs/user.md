@@ -115,7 +115,7 @@ weight | float. example: 45.5
 height | float. example: 155
 activity_level | string. one of Sedentary, Lightly Active, Moderately Active, Very Active
 allergies | string. example: "Allergies1,Allergies2"
-ec_relation | string. one of Husband, Wife
+ec_relation | string. one of Husband, Wife, Mother, Father etc.
 ec_name | string
 ec_country_code | example: 62, 65, etc
 ec_phone | numeric. 9-12 charactes. not start with 0. example: 81212341234

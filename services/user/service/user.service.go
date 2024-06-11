@@ -221,6 +221,10 @@ func (service *UserService) UpdateProfile(ctx context.Context, userId string, bo
 		return nil, err
 	}
 
+	if updateProfile.DOB.IsZero() {
+		updateProfile.DOB = profile[0].DOB
+	}
+
 	err = service.tables.profile.Update(ctx, profile[0].ID, &updateProfile)
 	if err != nil {
 		return nil, err
