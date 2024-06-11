@@ -67,6 +67,7 @@ func (rest *REST) InitializeRoutes() {
 		r.Get("/me", rest.MyCredential)
 		r.Get("/profile", rest.GetProfile)
 		r.Post("/profile", rest.CreateProfile)
+		r.Put("/profile/{id}", rest.UpdateProfile)
 	})
 }
 
@@ -152,6 +153,50 @@ func (rest *REST) GetProfile(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(dto.Object[any]{Error: err.Error(), Message: "Failed to Get Profile"})
+		return
+	}
+
+	json.NewEncoder(w).Encode(dto.Object[any]{Data: &data, Message: "OK"})
+}
+
+func (rest *REST) UpdateProfile(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	w.Header().Set("Content-Type", "application/json")
+	userId := chi.URLParam(r, "id")
+
+	payload, err := io.ReadAll(r.Body)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(dto.Object[any]{Error: err.Error()})
+		return
+	}
+
+	claims := ctx.Value(oauth.ClaimsContext)
+	c, _ := json.Marshal(claims)
+	var fClaims dto.FirebaseClaims
+	json.Unmarshal(c, &fClaims)
+
+	var req dto.RequestUpdateProfile
+	err = json.Unmarshal(payload, &req)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(dto.Object[any]{Error: err.Error()})
+		return
+	}
+
+	validate := validator.New()
+	err = validate.Struct(req)
+	if err != nil {
+		err = err.(validator.ValidationErrors)
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(dto.Object[any]{Error: err.Error()})
+		return
+	}
+
+	data, err := rest.userService.UpdateProfile(ctx, userId, &req)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(dto.Object[any]{Error: err.Error(), Message: "Failed to Update Profile"})
 		return
 	}
 
