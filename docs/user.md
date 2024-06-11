@@ -94,7 +94,7 @@ Status Code | Value
 ## Update Profile
 Key | Value
 -- | --
-Method | POST
+Method | PATCH
 URL | /profile/:id
 
 Note:
@@ -119,6 +119,30 @@ ec_relation | string. one of Husband, Wife, Mother, Father etc.
 ec_name | string
 ec_country_code | example: 62, 65, etc
 ec_phone | numeric. 9-12 charactes. not start with 0. example: 81212341234
+
+Status Code | Value
+-- | --
+200 | Success
+400 | Bad Request
+401 | Unauthorized
+
+## Delete Profile
+Key | Value
+-- | --
+Method | DELETE
+URL | /profile/:id
+
+Note:
+- id. user_id
+
+Headers | Value
+-- | --
+Authorization | bearer {token}
+Content-Type | application/json
+
+Body | -
+-- | --
+No Body | -
 
 Status Code | Value
 -- | --
