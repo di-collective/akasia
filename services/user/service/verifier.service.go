@@ -39,10 +39,30 @@ func (verifier *OauthVerifier) ValidateIDToken(ctx context.Context, idToken stri
 }
 
 // ValidateUser validates username and password returning an error if the user credentials are wrong
-func (*OauthVerifier) ValidateUser(username, password, scope string, r *http.Request) error {
-	if username == "user01" && password == "12345" {
+func (verifier *OauthVerifier) ValidateUser(username, password, scope string, r *http.Request) error {
+	user, err := verifier.tables.user.List(context.Background(), &common.FilterOptions{
+		Sort:   []exp.OrderedExpression{goqu.I("id").Desc()},
+		Filter: []exp.Expression{goqu.C("handle").Eq(username)},
+		Page:   1,
+		Limit:  1,
+	})
+	if err != nil {
+		return err
+	}
+
+	if len(user) == 0 {
+		err = errors.New("user does not exist")
+		return err
+	}
+
+	// TODO: compare password
+	if username == user[0].Handle {
 		return nil
 	}
+
+	// if username == user[0].Handle && password == "12345" {
+	// 	return nil
+	// }
 
 	return errors.New("invalid user")
 }
