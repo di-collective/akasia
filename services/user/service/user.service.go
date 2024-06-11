@@ -190,3 +190,41 @@ func (service *UserService) GetProfile(ctx context.Context, body *dto.FirebaseCl
 
 	return &res, nil
 }
+
+func (service *UserService) UpdateProfile(ctx context.Context, userId string, body *dto.RequestUpdateProfile) (any, error) {
+	updateProfile := models.Profile{}
+
+	// get profile
+	profile, err := service.tables.profile.List(ctx, &common.FilterOptions{
+		Sort:   []exp.OrderedExpression{goqu.I("id").Desc()},
+		Filter: []exp.Expression{goqu.C("user_id").Eq(userId)},
+		Page:   1,
+		Limit:  1,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("%w; %w", ErrRepositoryQueryFail, err)
+	}
+
+	if len(profile) == 0 {
+		err = errors.New("profile not found")
+		return nil, err
+	}
+
+	// update profile
+	b, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+
+	err = json.Unmarshal(b, &updateProfile)
+	if err != nil {
+		return nil, err
+	}
+
+	err = service.tables.profile.Update(ctx, profile[0].ID, &updateProfile)
+	if err != nil {
+		return nil, err
+	}
+
+	return profile[0], nil
+}
