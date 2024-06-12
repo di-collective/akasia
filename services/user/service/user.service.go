@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"database/sql"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -221,10 +222,45 @@ func (service *UserService) UpdateProfile(ctx context.Context, userId string, bo
 		return nil, err
 	}
 
+	if updateProfile.DOB.IsZero() {
+		updateProfile.DOB = profile[0].DOB
+	}
+
 	err = service.tables.profile.Update(ctx, profile[0].ID, &updateProfile)
 	if err != nil {
 		return nil, err
 	}
 
 	return profile[0], nil
+}
+
+func (service *UserService) DeleteProfile(ctx context.Context, userId string) error {
+	profile, err := service.tables.profile.List(ctx, &common.FilterOptions{
+		Sort:   []exp.OrderedExpression{goqu.I("id").Desc()},
+		Filter: []exp.Expression{goqu.C("user_id").Eq(userId)},
+		Page:   1,
+		Limit:  1,
+	})
+	if err != nil {
+		return fmt.Errorf("%w; %w", ErrRepositoryQueryFail, err)
+	}
+
+	if len(profile) == 0 {
+		err = errors.New("profile not found")
+		return err
+	}
+
+	updateProfile := models.Profile{
+		DeletedAt: sql.NullTime{
+			Time:  time.Now(),
+			Valid: true,
+		},
+	}
+
+	err = service.tables.profile.Update(ctx, profile[0].ID, &updateProfile)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

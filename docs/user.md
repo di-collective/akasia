@@ -91,6 +91,65 @@ Status Code | Value
 400 | Bad Request
 401 | Unauthorized
 
+## Update Profile
+Key | Value
+-- | --
+Method | PATCH
+URL | /profile/:id
+
+Note:
+- id. user_id
+
+Headers | Value
+-- | --
+Authorization | bearer {token}
+Content-Type | application/json
+
+Body | Description
+-- | --
+age | string
+dob | date of birth. example: "2006-01-02T15:04:05Z"
+sex | string. one of Male, Female
+blood_type | string. one of A, B, O, AB
+weight | float. example: 45.5
+height | float. example: 155
+activity_level | string. one of Sedentary, Lightly Active, Moderately Active, Very Active
+allergies | string. example: "Allergies1,Allergies2"
+ec_relation | string. one of Husband, Wife, Mother, Father etc.
+ec_name | string
+ec_country_code | example: 62, 65, etc
+ec_phone | numeric. 9-12 charactes. not start with 0. example: 81212341234
+
+Status Code | Value
+-- | --
+200 | Success
+400 | Bad Request
+401 | Unauthorized
+
+## Delete Profile
+Key | Value
+-- | --
+Method | DELETE
+URL | /profile/:id
+
+Note:
+- id. user_id
+
+Headers | Value
+-- | --
+Authorization | bearer {token}
+Content-Type | application/json
+
+Body | -
+-- | --
+No Body | -
+
+Status Code | Value
+-- | --
+200 | Success
+400 | Bad Request
+401 | Unauthorized
+
 ## Forgot Password
 Key | Value
 -- | --

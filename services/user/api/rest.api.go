@@ -67,7 +67,8 @@ func (rest *REST) InitializeRoutes() {
 		r.Get("/me", rest.MyCredential)
 		r.Get("/profile", rest.GetProfile)
 		r.Post("/profile", rest.CreateProfile)
-		r.Put("/profile/{id}", rest.UpdateProfile)
+		r.Patch("/profile/{id}", rest.UpdateProfile)
+		r.Delete("/profile/{id}", rest.DeleteProfile)
 	})
 }
 
@@ -171,11 +172,6 @@ func (rest *REST) UpdateProfile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	claims := ctx.Value(oauth.ClaimsContext)
-	c, _ := json.Marshal(claims)
-	var fClaims dto.FirebaseClaims
-	json.Unmarshal(c, &fClaims)
-
 	var req dto.RequestUpdateProfile
 	err = json.Unmarshal(payload, &req)
 	if err != nil {
@@ -201,4 +197,19 @@ func (rest *REST) UpdateProfile(w http.ResponseWriter, r *http.Request) {
 	}
 
 	json.NewEncoder(w).Encode(dto.Object[any]{Data: &data, Message: "OK"})
+}
+
+func (rest *REST) DeleteProfile(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	w.Header().Set("Content-Type", "application/json")
+	userId := chi.URLParam(r, "id")
+
+	err := rest.userService.DeleteProfile(ctx, userId)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(dto.Object[any]{Error: err.Error(), Message: "Failed to Delete Profile"})
+		return
+	}
+
+	json.NewEncoder(w).Encode(dto.Object[any]{Message: "Profile deleted successfully"})
 }
