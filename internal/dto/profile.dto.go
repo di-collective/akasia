@@ -25,14 +25,26 @@ type ResponseCreateProfile struct {
 }
 
 type ResponseGetProfile struct {
-	ID          string `json:"id,omitempty"`
-	UserID      string `json:"user_id,omitempty"`
-	Role        string `json:"role,omitempty"`
-	MedicalID   string `json:"medical_id,omitempty"`
-	Name        string `json:"name,omitempty"`
-	CountryCode string `json:"country_code,omitempty"`
-	Phone       string `json:"phone,omitempty"`
-	NIK         string `json:"nik,omitempty"`
+	ID            string    `json:"id,omitempty"`
+	UserID        string    `json:"user_id,omitempty"`
+	Role          string    `json:"role,omitempty"`
+	MedicalID     string    `json:"medical_id,omitempty"`
+	Name          string    `json:"name,omitempty"`
+	CountryCode   string    `json:"country_code,omitempty"`
+	Phone         string    `json:"phone,omitempty"`
+	NIK           string    `json:"nik,omitempty"`
+	Age           string    `json:"age,omitempty"`
+	DOB           time.Time `json:"dob,omitempty"`
+	Sex           string    `json:"sex,omitempty"`
+	BloodType     string    `json:"blood_type,omitempty"`
+	Weight        float64   `json:"weight,omitempty"`
+	Height        float64   `json:"height,omitempty"`
+	ActivityLevel string    `json:"activity_level,omitempty"`
+	Allergies     string    `json:"allergies,omitempty"`
+	ECRelation    string    `json:"ec_relation,omitempty"`
+	ECName        string    `json:"ec_name,omitempty"`
+	ECCountryCode string    `json:"ec_country_code,omitempty"`
+	ECPhone       string    `json:"ec_phone,omitempty"`
 }
 
 type RequestUpdateProfile struct {
