@@ -45,6 +45,7 @@ type ResponseGetProfile struct {
 	ECName        string    `json:"ec_name,omitempty"`
 	ECCountryCode string    `json:"ec_country_code,omitempty"`
 	ECPhone       string    `json:"ec_phone,omitempty"`
+	PhotoUrl      string    `json:"photo_url,omitempty"`
 }
 
 type RequestUpdateProfile struct {
@@ -60,6 +61,7 @@ type RequestUpdateProfile struct {
 	ECName        string    `json:"ec_name,omitempty"`
 	ECCountryCode string    `json:"ec_country_code,omitempty"`
 	ECPhone       string    `json:"ec_phone,omitempty"`
+	PhotoUrl      string    `json:"photo_url,omitempty"`
 }
 
 func (r RequestCreateProfile) Validate() error {
