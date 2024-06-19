@@ -6,13 +6,19 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
+	"mime/multipart"
+	"monorepo/internal/config"
 	"monorepo/internal/dto"
 	"monorepo/pkg/common"
 	"monorepo/pkg/utils"
 	"monorepo/services/user/models"
+	"net/url"
+	"os"
 	"strings"
 	"time"
 
+	"firebase.google.com/go/v4/auth"
 	"github.com/doug-martin/goqu/v9"
 	"github.com/doug-martin/goqu/v9/exp"
 	"github.com/go-playground/validator/v10"
@@ -23,8 +29,10 @@ import (
 func NewUserService(
 	tbUser common.Repository[models.User, string],
 	tbProfile common.Repository[models.Profile, string],
+	fbaClient *auth.Client,
 ) *UserService {
 	service := &UserService{}
+	service.fbaClient = fbaClient
 	service.validate = validator.New()
 	service.tables.user = tbUser
 	service.tables.profile = tbProfile
@@ -33,8 +41,9 @@ func NewUserService(
 }
 
 type UserService struct {
-	validate *validator.Validate
-	tables   struct {
+	fbaClient *auth.Client
+	validate  *validator.Validate
+	tables    struct {
 		user    common.Repository[models.User, string]
 		profile common.Repository[models.Profile, string]
 	}
@@ -226,6 +235,32 @@ func (service *UserService) UpdateProfile(ctx context.Context, userId string, bo
 		updateProfile.DOB = profile[0].DOB
 	}
 
+	if updateProfile.PhotoUrl != nil {
+		user, err := service.tables.user.List(ctx, &common.FilterOptions{
+			Sort:   []exp.OrderedExpression{goqu.I("id").Desc()},
+			Filter: []exp.Expression{goqu.C("id").Eq(userId)},
+			Page:   1,
+			Limit:  1,
+		})
+		if err != nil {
+			return nil, fmt.Errorf("%w; %w", ErrRepositoryQueryFail, err)
+		}
+
+		// get user by email
+		u, err := service.fbaClient.GetUserByEmail(ctx, user[0].Handle)
+		if err != nil {
+			return nil, err
+		}
+
+		// update firebase photo
+		params := (&auth.UserToUpdate{}).
+			PhotoURL(*updateProfile.PhotoUrl)
+		_, err = service.fbaClient.UpdateUser(ctx, u.UID, params)
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	err = service.tables.profile.Update(ctx, profile[0].ID, &updateProfile)
 	if err != nil {
 		return nil, err
@@ -263,4 +298,44 @@ func (service *UserService) DeleteProfile(ctx context.Context, userId string) er
 	}
 
 	return nil
+}
+
+func (service *UserService) UploadPhoto(ctx context.Context, env *config.Environment, file multipart.File, fileName, userId string) (any, error) {
+	// create temp file
+	tempFile, err := os.CreateTemp("./", fileName)
+	if err != nil {
+		return "", err
+	}
+	defer tempFile.Close()
+
+	// read file
+	fileBytes, err := io.ReadAll(file)
+	if err != nil {
+		return "", err
+	}
+	tempFile.Write(fileBytes)
+
+	link := fmt.Sprintf("https://%s.%s/%s", env.OSSBucketName, env.OSSEndpoint, url.QueryEscape(fileName))
+	err = utils.PutFile(env.OSSBucketName, env.OSSEndpoint, env.OSSAccessKeyID,
+		env.OSSAccessKeySecret, tempFile.Name(), fileName)
+	if err != nil {
+		return "", err
+	}
+
+	// save data to db
+	updatePhoto := dto.RequestUpdateProfile{
+		PhotoUrl: link,
+	}
+	_, err = service.UpdateProfile(ctx, userId, &updatePhoto)
+	if err != nil {
+		return "", err
+	}
+
+	// remove temp file
+	err = os.Remove(tempFile.Name())
+	if err != nil {
+		return "", err
+	}
+
+	return link, nil
 }

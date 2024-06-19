@@ -35,6 +35,7 @@ type Profile struct {
 	ECName        *string      `db:"ec_name" json:"ec_name" goqu:"omitempty"`
 	ECCountryCode *string      `db:"ec_country_code" json:"ec_country_code" goqu:"omitempty"`
 	ECPhone       *string      `db:"ec_phone" json:"ec_phone" goqu:"omitempty"`
+	PhotoUrl      *string      `db:"photo_url" json:"photo_url" goqu:"omitempty"`
 	CreatedAt     time.Time    `db:"created_at" json:"created_at" goqu:"omitempty"`
 	DeletedAt     sql.NullTime `db:"deleted_at" json:"deleted_at" goqu:"omitempty"`
 }

@@ -189,3 +189,31 @@ Status Code | Value
 -- | --
 200 | Success
 400 | Bad Request
+
+## Upload Photo Profile
+Key | Value
+-- | --
+Method | PATCH
+URL | /profile/:id/photo
+
+Note:
+- id. user_id
+
+Headers | Value
+-- | --
+Authorization | bearer {token}
+Content-Type | multipart/form-data
+
+Body | Description
+-- | --
+file | photo to be uploaded
+
+Response | Description
+-- | --
+data | photo url
+
+Status Code | Value
+-- | --
+200 | Success
+400 | Bad Request
+401 | Unauthorized

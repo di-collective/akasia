@@ -2,11 +2,13 @@ package api
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"monorepo/internal/config"
 	"monorepo/internal/dto"
 	"monorepo/services/user/service"
 	"net/http"
+	"path/filepath"
 	"time"
 
 	"github.com/go-chi/chi/v5"
@@ -40,7 +42,7 @@ func NewREST(
 	r.Use(middleware.RealIP)
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
-	r.Use(middleware.Timeout(30 * time.Second))
+	r.Use(middleware.Timeout(90 * time.Second))
 	r.Use(middleware.Compress(6))
 
 	return &REST{
@@ -68,6 +70,7 @@ func (rest *REST) InitializeRoutes() {
 		r.Get("/profile", rest.GetProfile)
 		r.Post("/profile", rest.CreateProfile)
 		r.Patch("/profile/{id}", rest.UpdateProfile)
+		r.Patch("/profile/{id}/photo", rest.UploadPhoto)
 		r.Delete("/profile/{id}", rest.DeleteProfile)
 	})
 }
@@ -212,4 +215,29 @@ func (rest *REST) DeleteProfile(w http.ResponseWriter, r *http.Request) {
 	}
 
 	json.NewEncoder(w).Encode(dto.Object[any]{Message: "Profile deleted successfully"})
+}
+
+func (rest *REST) UploadPhoto(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	w.Header().Set("Content-Type", "application/json")
+	r.ParseMultipartForm(10 << 20)
+
+	file, handler, err := r.FormFile("file")
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(dto.Object[any]{Error: err.Error()})
+		return
+	}
+	defer file.Close()
+
+	userId := chi.URLParam(r, "id")
+	fileName := fmt.Sprintf("PP-%s%s", userId, filepath.Ext(handler.Filename))
+	data, err := rest.userService.UploadPhoto(ctx, rest.env, file, fileName, userId)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(dto.Object[any]{Error: err.Error(), Message: "Failed to Change Profile Picture"})
+		return
+	}
+
+	json.NewEncoder(w).Encode(dto.Object[any]{Data: &data, Message: "OK"})
 }

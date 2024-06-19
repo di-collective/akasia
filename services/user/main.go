@@ -61,7 +61,7 @@ func main() {
 
 	restAPI := api.NewREST(
 		service.NewOauthVerifier(tbUser, fbaClient, cfg),
-		service.NewUserService(tbUser, tbProfile),
+		service.NewUserService(tbUser, tbProfile, fbaClient),
 		service.NewEmailService(dialer, mailer, fbaClient, tbUser, tbProfile, tbResetPassword),
 		cfg,
 	)
