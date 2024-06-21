@@ -27,6 +27,9 @@ Status Code | Value
 400 | Bad Request
 401 | Unauthorized
 
+**Notes**
+- already register to firebase, to get the idToken
+
 ## Get Firebase Claims
 Key | Value
 -- | --
@@ -64,6 +67,7 @@ name | string
 country_code | example: 62, 65, etc
 phone | numeric. 9-12 charactes. not start with 0. example: 81212341234
 nik | optional. numeric. 16 characters
+photo_url | optional. string
 
 Status Code | Value
 -- | --

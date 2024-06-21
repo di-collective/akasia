@@ -148,6 +148,7 @@ func (service *UserService) CreateProfile(ctx context.Context, body *dto.Request
 		CountryCode: body.CountryCode,
 		Phone:       body.Phone,
 		NIK:         &body.NIK,
+		PhotoUrl:    &body.PhotoUrl,
 		CreatedAt:   time.Now(),
 	}
 	err = service.tables.profile.Create(ctx, newProfile)
@@ -163,6 +164,7 @@ func (service *UserService) CreateProfile(ctx context.Context, body *dto.Request
 		CountryCode: newProfile.CountryCode,
 		Phone:       newProfile.Phone,
 		NIK:         *newProfile.NIK,
+		PhotoUrl:    *newProfile.PhotoUrl,
 	}
 
 	return &res, nil
