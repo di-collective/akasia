@@ -30,7 +30,7 @@ type Profile struct {
 	Weight        *float64     `db:"weight" json:"weight" goqu:"omitempty"`
 	Height        *float64     `db:"height" json:"height" goqu:"omitempty"`
 	ActivityLevel *string      `db:"activity_level" json:"activity_level" goqu:"omitempty"`
-	Allergies     *string      `db:"allergies" json:"allergies" goqu:"omitempty"`
+	Allergies     *string      `db:"allergies" json:"allergies"`
 	ECRelation    *string      `db:"ec_relation" json:"ec_relation" goqu:"omitempty"`
 	ECName        *string      `db:"ec_name" json:"ec_name" goqu:"omitempty"`
 	ECCountryCode *string      `db:"ec_country_code" json:"ec_country_code" goqu:"omitempty"`
