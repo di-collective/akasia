@@ -148,6 +148,7 @@ func (service *UserService) CreateProfile(ctx context.Context, body *dto.Request
 		CountryCode: body.CountryCode,
 		Phone:       body.Phone,
 		NIK:         &body.NIK,
+		PhotoUrl:    &body.PhotoUrl,
 		CreatedAt:   time.Now(),
 	}
 	err = service.tables.profile.Create(ctx, newProfile)
@@ -163,6 +164,7 @@ func (service *UserService) CreateProfile(ctx context.Context, body *dto.Request
 		CountryCode: newProfile.CountryCode,
 		Phone:       newProfile.Phone,
 		NIK:         *newProfile.NIK,
+		PhotoUrl:    *newProfile.PhotoUrl,
 	}
 
 	return &res, nil
@@ -266,7 +268,18 @@ func (service *UserService) UpdateProfile(ctx context.Context, userId string, bo
 		return nil, err
 	}
 
-	return profile[0], nil
+	// get updated profile
+	updatedProfile, err := service.tables.profile.List(ctx, &common.FilterOptions{
+		Sort:   []exp.OrderedExpression{goqu.I("id").Desc()},
+		Filter: []exp.Expression{goqu.C("user_id").Eq(userId)},
+		Page:   1,
+		Limit:  1,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("%w; %w", ErrRepositoryQueryFail, err)
+	}
+
+	return updatedProfile[0], nil
 }
 
 func (service *UserService) DeleteProfile(ctx context.Context, userId string) error {

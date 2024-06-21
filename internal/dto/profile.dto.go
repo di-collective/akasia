@@ -12,6 +12,7 @@ type RequestCreateProfile struct {
 	CountryCode string `json:"country_code" validate:"required"`
 	Phone       string `json:"phone" validate:"required"`
 	NIK         string `json:"nik,omitempty"`
+	PhotoUrl    string `json:"photo_url,omitempty"`
 }
 
 type ResponseCreateProfile struct {
@@ -22,6 +23,7 @@ type ResponseCreateProfile struct {
 	CountryCode string `json:"country_code,omitempty"`
 	Phone       string `json:"phone,omitempty"`
 	NIK         string `json:"nik,omitempty"`
+	PhotoUrl    string `json:"photo_url,omitempty"`
 }
 
 type ResponseGetProfile struct {

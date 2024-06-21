@@ -230,8 +230,11 @@ func (rest *REST) UploadPhoto(w http.ResponseWriter, r *http.Request) {
 	}
 	defer file.Close()
 
+	t := time.Now()
+	nanoT := t.Format("20060102150405")
+	fileExt := filepath.Ext(handler.Filename)
 	userId := chi.URLParam(r, "id")
-	fileName := fmt.Sprintf("PP-%s%s", userId, filepath.Ext(handler.Filename))
+	fileName := fmt.Sprintf("PP-%s-%s%s", userId, nanoT, fileExt)
 	data, err := rest.userService.UploadPhoto(ctx, rest.env, file, fileName, userId)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
