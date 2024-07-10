@@ -3,10 +3,10 @@ package config
 type Environment struct {
 	DbSslMode          string `env:"DB_SSL_MODE" envDefault:"disable"`
 	DbHost             string `env:"DB_HOST" envDefault:"localhost"`
-	DbName             string `env:"DB_NAME" envDefault:"notification"`
+	DbName             string `env:"DB_NAME" envDefault:"postgres"`
 	DbPort             string `env:"DB_PORT" envDefault:"5432"`
 	DbUser             string `env:"DB_USER" envDefault:"postgres"`
-	DbPass             string `env:"DB_PASS" envDefault:"postgresPassword"`
+	DbPass             string `env:"DB_PASS" envDefault:"sa123456"`
 	FirebaseConfig     string `env:"FIREBASE_CONFIG" envDefault:"./firebase.json"`
 	JWTAlgo            string `env:"JWT_ALGO" envDefault:"HS256"`
 	JWTSecret          string `env:"JWT_SECRET" envDefault:"JWTSECRET11234567892123456789312"`
