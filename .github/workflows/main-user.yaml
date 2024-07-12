@@ -3,6 +3,7 @@ name: Build Svc User Main
 on:
   push:
     branches: [main]
+    paths: [services/user/**]
 
 jobs:
   build:
