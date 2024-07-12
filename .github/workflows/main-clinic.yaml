@@ -2,7 +2,7 @@ name: Build Svc Clinic
 
 on:
   push:
-    branches: [main,do/clinic-svc]
+    branches: [main]
 
 jobs:
   build:
