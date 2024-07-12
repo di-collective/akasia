@@ -2,7 +2,7 @@ name: Build Svc Clinic
 
 on:
   push:
-    branches: [main,DO/DEPLOY-CLINIC]
+    branches: [main,do/clinic-svc]
 
 jobs:
   build:
@@ -23,7 +23,7 @@ jobs:
         login-server: "${{ secrets.REGISTRY_ADDR }}"
         username: "${{ secrets.REGISTRY_USERNAME }}"
         password: "${{ secrets.REGISTRY_PASSWORD }}"
-        
+
     - name: Build and push image
       env:
         IMAGE_TAG: main
