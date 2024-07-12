@@ -1,9 +1,9 @@
-name: Build Svc User Main
+name: Build Svc Clinic 
 
 on:
   push:
     branches: [main]
-    paths: [services/user/**]
+    paths: [services/clinic/**]
 
 jobs:
   build:
@@ -24,14 +24,13 @@ jobs:
         login-server: "${{ secrets.REGISTRY_ADDR }}"
         username: "${{ secrets.REGISTRY_USERNAME }}"
         password: "${{ secrets.REGISTRY_PASSWORD }}"
+
     - name: Build and push image
       env:
         IMAGE_TAG: main
-        FIREBASE_JSON: ${{ secrets.FIREBASE_JSON }}
+        IMAGE: ${{ vars.IMAGE }}
       shell: bash
       run: |
-        echo "$FIREBASE_JSON" >> ./services/user/config/service-account.json
-        cat ./services/user/config/service-account.json
-        docker build --build-arg DIR=user -t registry-intl.ap-southeast-5.aliyuncs.com/akasia/akasia-be:$IMAGE_TAG .
-        docker push registry-intl.ap-southeast-5.aliyuncs.com/akasia/akasia-be:$IMAGE_TAG
+        docker build  -f Dockerfile-clinic --build-arg DIR=clinic -t $IMAGE:$IMAGE_TAG .
+        docker push $IMAGE:$IMAGE_TAG
         
