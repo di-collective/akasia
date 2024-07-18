@@ -114,6 +114,7 @@ func (service *CLinicService) UpdateLocation(ctx context.Context, locID string, 
 	location.Phone = body.Phone
 	location.OpeningTime = body.OpeningTime
 	location.ClosingTime = body.ClosingTime
+	location.Capacity = body.Capacity
 
 	err = service.tables.location.Update(ctx, locID, location)
 	if err != nil {
