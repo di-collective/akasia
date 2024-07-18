@@ -194,14 +194,17 @@ func (service *CLinicService) GetLocationByClinic(ctx context.Context, clinicID 
 	}
 
 	for _, loc := range locations {
+		openTime, _ := time.Parse(dateLayout, loc.OpeningTime)
+		closeTime, _ := time.Parse(dateLayout, loc.ClosingTime)
+
 		c := dto.ResponseGetLocation{}
 		c.ID = loc.ID
 		c.ClinicID = loc.ClinicID
 		c.Name = loc.Name
 		c.Address = loc.Address
 		c.Phone = loc.Phone
-		c.OpeningTime = loc.OpeningTime
-		c.ClosingTime = loc.ClosingTime
+		c.OpeningTime = openTime.Format(timeLayout)
+		c.ClosingTime = closeTime.Format(timeLayout)
 		c.CreatedAt = loc.CreatedAt
 		if loc.DeletedAt.Valid {
 			c.DeletedAt = &loc.DeletedAt.Time
