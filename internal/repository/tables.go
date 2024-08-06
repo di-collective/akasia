@@ -8,6 +8,7 @@ type tables struct {
 	ResetPassword string
 	Clinic        string
 	Location      string
+	Event         string
 }
 
 type views struct {
@@ -23,6 +24,7 @@ var (
 		ResetPassword: "reset_password",
 		Clinic:        "clinic",
 		Location:      "location",
+		Event:         "event",
 	}
 	Views = views{
 		UserMessage: "view_user_message",

@@ -17,13 +17,19 @@ WORKDIR /app
 COPY --from=builder /app/service .
 
 ARG DIR
-# Copy the Pre-built binary file from the previous stage
-RUN mkdir ./config
-COPY --from=builder /app/services/$DIR/config/service-account.json ./config
+RUN if [ "$DIR" = "user" ]; then \
+        cp /app/services/$DIR/config/service-account.json ./config/; \
+    else \
+        echo "Not copying service-account.json"; \
+    fi
 
 ARG DIR
-RUN mkdir ./template
-COPY --from=builder /app/services/$DIR/template/*.html ./template
+RUN if [ "$DIR" = "user" ]; then \
+        cp /app/services/$DIR/template/*.html ./template; \
+    else \
+        echo "Not copying html"; \
+    fi
+
 ENV TZ=Asia/Jakarta
 #Expose port
 EXPOSE 80
