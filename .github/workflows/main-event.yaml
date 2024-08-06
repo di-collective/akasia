@@ -2,7 +2,7 @@ name: Build Svc Event
 
 on:
   push:
-    branches: [main,do/cicd-event]
+    branches: [main]
     paths: [services/event/**]
 
 jobs:
