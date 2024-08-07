@@ -38,7 +38,7 @@ func CalculateCalorieBudget(gender string, weight, height float64, age int, acti
 func CalculateWeeksToTarget(startWeight, targetWeight, weightChangePerWeek float64, flag string) float64 {
 	if strings.ToLower(flag) == constants.WeightGoalLoss {
 		return math.Ceil((startWeight - targetWeight) / weightChangePerWeek)
-	} else if strings.ToLower(flag) == constants.WeightGoalLoss {
+	} else if strings.ToLower(flag) == constants.WeightGoalGain {
 		return math.Ceil((targetWeight - startWeight) / weightChangePerWeek)
 	}
 

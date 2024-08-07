@@ -16,7 +16,7 @@ const (
 	ActivityLevelVeryActive     = "Very Active"
 
 	ActivityLevelSedentaryVal      float64 = 1.2
-	ActivityLevelModerateActiveVal float64 = 1.55
 	ActivityLevelLightActiveVal    float64 = 1.375
+	ActivityLevelModerateActiveVal float64 = 1.55
 	ActivityLevelVeryActiveVal     float64 = 1.725
 )
