@@ -9,6 +9,8 @@ type tables struct {
 	Clinic        string
 	Location      string
 	Event         string
+	WeightGoal    string
+	WeightHistory string
 }
 
 type views struct {
@@ -25,6 +27,8 @@ var (
 		Clinic:        "clinic",
 		Location:      "location",
 		Event:         "event",
+		WeightGoal:    "weight_goal",
+		WeightHistory: "weight_history",
 	}
 	Views = views{
 		UserMessage: "view_user_message",
