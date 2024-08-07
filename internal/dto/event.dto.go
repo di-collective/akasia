@@ -46,6 +46,11 @@ type FilterGetEvents struct {
 	EndTime    time.Time
 }
 
+type FilterGetAppointments struct {
+	Page  int
+	Limit int
+}
+
 func (r RequestCreateEvent) Validate() error {
 	if r.Type != constants.Appointment && r.Status != "" {
 		err := errors.New("status should only be provided when type is appointment")
