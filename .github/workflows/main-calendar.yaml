@@ -1,9 +1,9 @@
-name: Build Svc Event 
+name: Build Svc calendar 
 
 on:
   push:
     branches: [main]
-    paths: [services/event/**]
+    paths: [services/calendar/**]
 
 jobs:
   build:
@@ -30,6 +30,6 @@ jobs:
         IMAGE_TAG: main
       shell: bash
       run: |
-        docker build --build-arg DIR=event -t registry-intl.ap-southeast-5.aliyuncs.com/akasia/event:$IMAGE_TAG .
-        docker push registry-intl.ap-southeast-5.aliyuncs.com/akasia/event:$IMAGE_TAG
+        docker build --build-arg DIR=calendar -t registry-intl.ap-southeast-5.aliyuncs.com/akasia/calendar:$IMAGE_TAG .
+        docker push registry-intl.ap-southeast-5.aliyuncs.com/akasia/calendar:$IMAGE_TAG
         
