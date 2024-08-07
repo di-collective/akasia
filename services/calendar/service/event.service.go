@@ -194,7 +194,7 @@ func (service *EventService) createHolidayEvents(body *dto.RequestCreateEvent) [
 	return events
 }
 
-func (service *EventService) GetEvents(ctx context.Context, filter dto.FilterGetEvents) (dto.ResponseGetEvents, error) {
+func (service *EventService) GetEvents(ctx context.Context, filter dto.FilterGetEvents, location *dto.ResponseGetLocation, clinic *dto.ResponseGetClinic) (dto.ResponseGetEvents, error) {
 	var res dto.ResponseGetEvents
 
 	events, err := service.tables.event.List(ctx, &common.FilterOptions{
@@ -216,13 +216,12 @@ func (service *EventService) GetEvents(ctx context.Context, filter dto.FilterGet
 
 	for _, event := range events {
 		e := dto.ResponseDetailEvent{
-			ID:         event.ID,
-			ProfileID:  event.ProfileID,
-			LocationID: event.LocationID,
-			Status:     event.Status,
-			Type:       event.Type,
-			StartTime:  event.StartTime,
-			EndTime:    event.EndTime,
+			Status:    event.Status,
+			Type:      event.Type,
+			StartTime: event.StartTime,
+			EndTime:   event.EndTime,
+			Clinic:    clinic.Name,
+			Location:  location.Name,
 		}
 
 		res.Events = append(res.Events, e)
@@ -231,4 +230,86 @@ func (service *EventService) GetEvents(ctx context.Context, filter dto.FilterGet
 	res.Capacity, _ = strconv.Atoi(os.Getenv("CAPACITY"))
 
 	return res, nil
+}
+
+func (service *EventService) GetLocation(ctx context.Context, id string) (int, *dto.ResponseGetLocation, error) {
+	method := "GET"
+
+	url := os.Getenv("BASE_URL_CLINIC") + "/clinic/location/" + id
+
+	headers := []utils.Header{
+		{
+			Key:   "Authorization",
+			Value: "Bearer " + ctx.Value(oauth.AccessTokenContext).(string),
+		},
+	}
+
+	location := dto.ResponseGetLocation{}
+
+	var result map[string]interface{}
+
+	res, err := utils.DoRequest(method, url, headers, nil, &result)
+	if err != nil {
+		return res.StatusCode, &location, err
+	}
+
+	err = json.Unmarshal([]byte(res.Body), &result)
+	if err != nil {
+		return res.StatusCode, &location, err
+	}
+
+	data := result["data"].(map[string]interface{})
+
+	locationData, err := json.Marshal(data)
+	if err != nil {
+		return res.StatusCode, &location, err
+	}
+
+	err = json.Unmarshal(locationData, &location)
+	if err != nil {
+		return res.StatusCode, &location, err
+	}
+
+	return res.StatusCode, &location, nil
+}
+
+func (service *EventService) GetClinic(ctx context.Context, id string) (int, *dto.ResponseGetClinic, error) {
+	method := "GET"
+
+	url := os.Getenv("BASE_URL_CLINIC") + "/clinic/" + id
+
+	headers := []utils.Header{
+		{
+			Key:   "Authorization",
+			Value: "Bearer " + ctx.Value(oauth.AccessTokenContext).(string),
+		},
+	}
+
+	clinic := dto.ResponseGetClinic{}
+
+	var result map[string]interface{}
+
+	res, err := utils.DoRequest(method, url, headers, nil, &result)
+	if err != nil {
+		return res.StatusCode, &clinic, err
+	}
+
+	err = json.Unmarshal([]byte(res.Body), &result)
+	if err != nil {
+		return res.StatusCode, &clinic, err
+	}
+
+	data := result["data"].(map[string]interface{})
+
+	clinicData, err := json.Marshal(data)
+	if err != nil {
+		return res.StatusCode, &clinic, err
+	}
+
+	err = json.Unmarshal(clinicData, &clinic)
+	if err != nil {
+		return res.StatusCode, &clinic, err
+	}
+
+	return res.StatusCode, &clinic, nil
 }

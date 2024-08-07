@@ -24,4 +24,5 @@ type Environment struct {
 	OSSBucketName      string `env:"OSS_BUCKET_NAME"`
 	BaseURLUser        string `env:"BASE_URL_USER"`
 	Capacity           string `env:"CAPACITY"`
+	BaseURLClinic      string `env:"BASE_URL_CLINIC"`
 }
