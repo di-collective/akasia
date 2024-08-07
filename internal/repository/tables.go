@@ -8,6 +8,7 @@ type tables struct {
 	ResetPassword string
 	Clinic        string
 	Location      string
+	Event         string
 	WeightGoal    string
 	WeightHistory string
 }
@@ -25,6 +26,7 @@ var (
 		ResetPassword: "reset_password",
 		Clinic:        "clinic",
 		Location:      "location",
+		Event:         "event",
 		WeightGoal:    "weight_goal",
 		WeightHistory: "weight_history",
 	}
