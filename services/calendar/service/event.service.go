@@ -313,3 +313,43 @@ func (service *EventService) GetClinic(ctx context.Context, id string) (int, *dt
 
 	return res.StatusCode, &clinic, nil
 }
+
+func (service *EventService) GetAppointments(ctx context.Context, filter dto.FilterGetAppointments, profile *dto.ResponseGetProfile) ([]dto.ResponseDetailEvent, error) {
+	var res []dto.ResponseDetailEvent
+
+	events, err := service.tables.event.List(ctx, &common.FilterOptions{
+		Filter: []exp.Expression{
+			goqu.C("profile_id").Eq(profile.ID),
+			goqu.C("type").Eq(constants.Appointment),
+			goqu.C("deleted_at").IsNull(),
+		},
+		Sort:  []exp.OrderedExpression{goqu.I("start_time").Desc()},
+		Page:  filter.Page,
+		Limit: filter.Limit,
+	})
+
+	if err != nil {
+		return []dto.ResponseDetailEvent{}, fmt.Errorf("%w; %w", repository.ErrRepositoryQueryFail, err)
+	}
+
+	for _, event := range events {
+		e := dto.ResponseDetailEvent{
+			Status:    event.Status,
+			Type:      event.Type,
+			StartTime: event.StartTime,
+			EndTime:   event.EndTime,
+		}
+		_, location, err := service.GetLocation(ctx, event.LocationID)
+		if err == nil && location != nil && location.Name != "" {
+			e.Location = location.Name
+		}
+		_, clinic, err := service.GetClinic(ctx, location.ClinicID)
+		if err == nil && clinic != nil && clinic.Name != "" {
+			e.Clinic = clinic.Name
+		}
+
+		res = append(res, e)
+	}
+
+	return res, nil
+}

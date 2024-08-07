@@ -55,6 +55,7 @@ func (rest *REST) InitializeRoutes() {
 		r.Use(rest.oauthAuthorizer)
 		r.Post("/event", rest.CreateEvent)
 		r.Get("/events", rest.GetEvents)
+		r.Get("/appointments", rest.GetAppointments)
 	})
 }
 
@@ -192,4 +193,35 @@ func (rest *REST) GetEvents(w http.ResponseWriter, r *http.Request) {
 	}
 
 	json.NewEncoder(w).Encode(dto.Object[dto.ResponseGetEvents]{Data: &data, Message: "OK"})
+}
+
+func (rest *REST) GetAppointments(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	w.Header().Set("Content-Type", "application/json")
+
+	pageStr := r.URL.Query().Get("page")
+	page, _ := strconv.Atoi(pageStr)
+
+	limitStr := r.URL.Query().Get("limit")
+	limit, _ := strconv.Atoi(limitStr)
+
+	code, profile, err := rest.eventService.GetProfile(ctx)
+	if err != nil {
+		w.WriteHeader(code)
+		json.NewEncoder(w).Encode(dto.Object[any]{Error: err.Error(), Message: "Failed to Create Event"})
+		return
+	}
+
+	data, err := rest.eventService.GetAppointments(ctx, dto.FilterGetAppointments{
+		Page:  page,
+		Limit: limit,
+	}, profile)
+
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(dto.Object[any]{Error: err.Error(), Message: "Failed to Get Events"})
+		return
+	}
+
+	json.NewEncoder(w).Encode(dto.Object[[]dto.ResponseDetailEvent]{Data: &data, Message: "OK"})
 }
