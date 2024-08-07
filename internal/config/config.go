@@ -23,4 +23,5 @@ type Environment struct {
 	OSSAccessKeySecret string `env:"OSS_ACCESS_KEY_SECRET"`
 	OSSBucketName      string `env:"OSS_BUCKET_NAME"`
 	BaseURLUser        string `env:"BASE_URL_USER"`
+	Capacity           string `env:"CAPACITY"`
 }

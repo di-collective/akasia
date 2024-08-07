@@ -9,6 +9,7 @@ import (
 	"monorepo/pkg/utils"
 	"monorepo/services/calendar/models"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/doug-martin/goqu/v9"
@@ -191,4 +192,43 @@ func (service *EventService) createHolidayEvents(body *dto.RequestCreateEvent) [
 	}
 
 	return events
+}
+
+func (service *EventService) GetEvents(ctx context.Context, filter dto.FilterGetEvents) (dto.ResponseGetEvents, error) {
+	var res dto.ResponseGetEvents
+
+	events, err := service.tables.event.List(ctx, &common.FilterOptions{
+		Filter: []exp.Expression{
+			goqu.C("location_id").Eq(filter.LocationID),
+			goqu.C("start_time").Gte(filter.StartTime),
+			goqu.C("end_time").Lte(filter.EndTime),
+			goqu.C("deleted_at").IsNull(),
+			goqu.C("status").Neq(constants.Canceled),
+		},
+		Sort:  []exp.OrderedExpression{goqu.I("start_time").Asc()},
+		Page:  filter.Page,
+		Limit: filter.Limit,
+	})
+
+	if err != nil {
+		return dto.ResponseGetEvents{}, fmt.Errorf("%w; %w", repository.ErrRepositoryQueryFail, err)
+	}
+
+	for _, event := range events {
+		e := dto.ResponseDetailEvent{
+			ID:         event.ID,
+			ProfileID:  event.ProfileID,
+			LocationID: event.LocationID,
+			Status:     event.Status,
+			Type:       event.Type,
+			StartTime:  event.StartTime,
+			EndTime:    event.EndTime,
+		}
+
+		res.Events = append(res.Events, e)
+	}
+
+	res.Capacity, _ = strconv.Atoi(os.Getenv("CAPACITY"))
+
+	return res, nil
 }

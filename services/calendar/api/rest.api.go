@@ -8,6 +8,8 @@ import (
 	"monorepo/internal/dto"
 	"monorepo/services/calendar/service"
 	"net/http"
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/go-chi/chi/v5"
@@ -52,6 +54,7 @@ func (rest *REST) InitializeRoutes() {
 	rest.Router.Group(func(r chi.Router) {
 		r.Use(rest.oauthAuthorizer)
 		r.Post("/event", rest.CreateEvent)
+		r.Get("/events", rest.GetEvents)
 	})
 }
 
@@ -109,4 +112,70 @@ func (rest *REST) CreateEvent(w http.ResponseWriter, r *http.Request) {
 	}
 
 	json.NewEncoder(w).Encode(dto.Object[[]dto.ResponseCreateEvent]{Data: &data, Message: "OK"})
+}
+
+func (rest *REST) GetEvents(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	w.Header().Set("Content-Type", "application/json")
+
+	pageStr := r.URL.Query().Get("page")
+	page, _ := strconv.Atoi(pageStr)
+
+	limitStr := r.URL.Query().Get("limit")
+	limit, _ := strconv.Atoi(limitStr)
+
+	locationID := r.URL.Query().Get("location_id")
+	if locationID == "" {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(dto.Object[any]{Error: "Location id can't be empty", Message: "Invalid query parameter"})
+		return
+	}
+
+	startTimeStr := r.URL.Query().Get("start_time")
+	if startTimeStr == "" {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(dto.Object[any]{Error: "Start time can't be empty", Message: "Invalid query parameter"})
+		return
+	}
+	startTime, err := time.Parse(time.RFC3339, strings.ReplaceAll(startTimeStr, " ", "+"))
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(dto.Object[any]{Error: err.Error(), Message: "Invalid query parameter"})
+		return
+	}
+
+	endTimeStr := r.URL.Query().Get("end_time")
+	if endTimeStr == "" {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(dto.Object[any]{Error: "End time can't be empty", Message: "Invalid query parameter"})
+		return
+	}
+	endTime, err := time.Parse(time.RFC3339, strings.ReplaceAll(endTimeStr, " ", "+"))
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(dto.Object[any]{Error: err.Error(), Message: "Invalid query parameter"})
+		return
+	}
+
+	if endTime.Before(startTime) {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(dto.Object[any]{Error: "End time must be greater than or equal to start time", Message: "Invalid query parameter"})
+		return
+	}
+
+	data, err := rest.eventService.GetEvents(ctx, dto.FilterGetEvents{
+		Page:       page,
+		Limit:      limit,
+		LocationID: locationID,
+		StartTime:  startTime,
+		EndTime:    endTime,
+	})
+
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(dto.Object[any]{Error: err.Error(), Message: "Failed to Get Events"})
+		return
+	}
+
+	json.NewEncoder(w).Encode(dto.Object[dto.ResponseGetEvents]{Data: &data, Message: "OK"})
 }
