@@ -163,13 +163,27 @@ func (rest *REST) GetEvents(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	code, location, err := rest.eventService.GetLocation(ctx, locationID)
+	if err != nil {
+		w.WriteHeader(code)
+		json.NewEncoder(w).Encode(dto.Object[any]{Error: err.Error(), Message: "Failed to Get Events"})
+		return
+	}
+
+	code, clinic, err := rest.eventService.GetClinic(ctx, location.ClinicID)
+	if err != nil {
+		w.WriteHeader(code)
+		json.NewEncoder(w).Encode(dto.Object[any]{Error: err.Error(), Message: "Failed to Get Events"})
+		return
+	}
+
 	data, err := rest.eventService.GetEvents(ctx, dto.FilterGetEvents{
 		Page:       page,
 		Limit:      limit,
 		LocationID: locationID,
 		StartTime:  startTime,
 		EndTime:    endTime,
-	})
+	}, location, clinic)
 
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)

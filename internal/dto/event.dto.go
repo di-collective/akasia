@@ -25,14 +25,12 @@ type ResponseCreateEvent struct {
 }
 
 type ResponseDetailEvent struct {
-	ID         string    `json:"id,omitempty"`
-	ProfileID  *string   `json:"profile_id,omitempty"`
-	LocationID string    `json:"location_id,omitempty"`
-	Status     string    `json:"status,omitempty"`
-	Type       string    `json:"type,omitempty"`
-	StartTime  time.Time `json:"start_time,omitempty"`
-	EndTime    time.Time `json:"end_time,omitempty"`
-	Capacity   int       `json:"capacity,omitempty"`
+	Clinic    string    `json:"clinic,omitempty"`
+	Location  string    `json:"location,omitempty"`
+	Status    string    `json:"status,omitempty"`
+	Type      string    `json:"type,omitempty"`
+	StartTime time.Time `json:"start_time,omitempty"`
+	EndTime   time.Time `json:"end_time,omitempty"`
 }
 
 type ResponseGetEvents struct {
