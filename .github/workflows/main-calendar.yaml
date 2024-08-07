@@ -1,8 +1,8 @@
-name: Build Svc Event 
+name: Build Svc calendar 
 
 on:
   push:
-    branches: [main,event]
+    branches: [main]
     paths: [services/calendar/**]
 
 jobs:
