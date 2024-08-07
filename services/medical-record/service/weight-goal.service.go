@@ -55,6 +55,7 @@ func (service *WeightGoalService) IsWeightGoalExists(ctx context.Context, profil
 }
 
 func (service *WeightGoalService) CreateWightGoal(ctx context.Context, body dto.CreateWeightGoalRequest) (*dto.CreateWeightGoalResponse, error) {
+	now := time.Now()
 	profile, err := GetProfile(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("%w; %w", ErrGetProfile, err)
@@ -82,18 +83,18 @@ func (service *WeightGoalService) CreateWightGoal(ctx context.Context, body dto.
 	var calorieBgt = math.Round(CalculateCalorieBudget(profile.Sex, body.StartingWeight, profile.Height, age, body.ActivityLevel)*100) / 100
 
 	//calculate target date
-	targetDate := CalculateTargetDate(profile.Sex, age, profile.Height, body.StartingWeight, body.TargetWeight, 0.5, body.ActivityLevel, wgFlag)
+	targetDate := CalculateTargetDate(profile.Sex, age, profile.Height, body.StartingWeight, body.TargetWeight, 0.5, body.ActivityLevel, wgFlag, now)
 
 	newWeightGoal := &model.WeightGoal{
 		ID:             ulid.Make().String(),
 		ProfileID:      profile.ID,
 		StartingWeight: body.StartingWeight,
-		StartingDate:   time.Now(),
+		StartingDate:   now,
 		TargetWeight:   body.TargetWeight,
 		TargetDate:     targetDate,
 		CalorieBudget:  calorieBgt,
 		Flag:           wgFlag,
-		CreatedAt:      time.Now(),
+		CreatedAt:      now,
 		ActivityLevel:  body.ActivityLevel,
 	}
 
@@ -122,8 +123,13 @@ func (service *WeightGoalService) CreateWightGoal(ctx context.Context, body dto.
 	}
 
 	return &dto.CreateWeightGoalResponse{
-		TargetWeight: newWeightGoal.TargetWeight,
-		TargetDate:   targetDate.Format(shortdDateLayout),
+		StartingWeight: newWeightGoal.StartingWeight,
+		StartingDate:   newWeightGoal.StartingDate.Format(shortdDateLayout),
+		TargetWeight:   newWeightGoal.TargetWeight,
+		TargetDate:     newWeightGoal.TargetDate.Format(shortdDateLayout),
+		ActivityLevel:  newWeightGoal.ActivityLevel,
+		CalorieBudget:  newWeightGoal.CalorieBudget,
+		Flag:           newWeightGoal.Flag,
 	}, nil
 }
 
@@ -147,7 +153,7 @@ func (service *WeightGoalService) GetWeightGoal(ctx context.Context) (*dto.GetWe
 	}
 
 	if len(wg) < 1 {
-		return nil, fmt.Errorf("%w; %w", ErrNotFound, err)
+		return nil, fmt.Errorf("%w", ErrNotFound)
 	}
 
 	res := dto.GetWeightGoalResponse{

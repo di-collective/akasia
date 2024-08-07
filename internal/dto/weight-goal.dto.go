@@ -11,8 +11,13 @@ type CreateWeightGoalRequest struct {
 }
 
 type CreateWeightGoalResponse struct {
-	TargetWeight float64 `json:"target_weight,omitempty"`
-	TargetDate   string  `json:"target_date,omitempty"`
+	StartingWeight float64 `json:"starting_weight,omitempty"`
+	StartingDate   string  `json:"starting_date,omitempty"`
+	TargetWeight   float64 `json:"target_weight,omitempty"`
+	TargetDate     string  `json:"target_date,omitempty"`
+	ActivityLevel  string  `json:"activity_level,omitempty"`
+	CalorieBudget  float64 `json:"calorie_budget,omitempty"`
+	Flag           string  `json:"flag,omitempty"`
 }
 
 type GetWeightGoalResponse struct {

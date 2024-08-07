@@ -45,9 +45,8 @@ func CalculateWeeksToTarget(startWeight, targetWeight, weightChangePerWeek float
 	return 0.0 // if flag not valid
 }
 
-func CalculateTargetDate(gender string, age int, height, startWeight, targetWeight, weightChangePerWeek float64, activityLevel, flag string) time.Time {
+func CalculateTargetDate(gender string, age int, height, startWeight, targetWeight, weightChangePerWeek float64, activityLevel, flag string, startdate time.Time) time.Time {
 	weeksToTarget := CalculateWeeksToTarget(startWeight, targetWeight, weightChangePerWeek, flag)
-	now := time.Now()
-	targetDate := now.AddDate(0, 0, int(weeksToTarget*7))
+	targetDate := startdate.AddDate(0, 0, int(weeksToTarget*7))
 	return targetDate
 }
