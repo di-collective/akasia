@@ -7,7 +7,7 @@ import (
 	"monorepo/internal/dto"
 	"monorepo/pkg/common"
 	"monorepo/pkg/utils"
-	"monorepo/services/event/models"
+	"monorepo/services/calendar/models"
 	"os"
 	"time"
 

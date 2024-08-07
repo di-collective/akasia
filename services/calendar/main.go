@@ -5,9 +5,9 @@ import (
 	"monorepo/internal/config"
 	"monorepo/internal/db"
 	"monorepo/internal/repository"
-	"monorepo/services/event/api"
-	"monorepo/services/event/models"
-	"monorepo/services/event/service"
+	"monorepo/services/calendar/api"
+	"monorepo/services/calendar/models"
+	"monorepo/services/calendar/service"
 	"net/http"
 
 	"github.com/caarlos0/env"

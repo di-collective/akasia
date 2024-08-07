@@ -6,7 +6,7 @@ import (
 	"monorepo/internal/config"
 	"monorepo/internal/constants"
 	"monorepo/internal/dto"
-	"monorepo/services/event/service"
+	"monorepo/services/calendar/service"
 	"net/http"
 	"time"
 
