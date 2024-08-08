@@ -5,7 +5,7 @@ import (
 	"io"
 	"monorepo/internal/config"
 	"monorepo/internal/dto"
-	"monorepo/services/medical-record/service"
+	"monorepo/services/fitness/service"
 	"net/http"
 	"time"
 
@@ -52,6 +52,8 @@ func (rest *REST) InitializeRoutes() {
 		r.Use(rest.oauthAuthorizer)
 		r.Post("/weight-goal", rest.CreateWeightGoal)
 		r.Get("/weight-goal", rest.GetWeightGoal)
+		r.Patch("/weight-goal", rest.UpdateWeightGoal)
+		r.Post("/weight-goal/simulation", rest.WeightGoalSimulation)
 	})
 }
 
@@ -116,4 +118,94 @@ func (rest *REST) GetWeightGoal(w http.ResponseWriter, r *http.Request) {
 	}
 
 	json.NewEncoder(w).Encode(dto.Object[*dto.GetWeightGoalResponse]{Data: &data, Message: "OK"})
+}
+
+func (rest *REST) UpdateWeightGoal(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	w.Header().Set("Content-Type", "application/json")
+
+	payload, err := io.ReadAll(r.Body)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(dto.Object[any]{Error: err.Error()})
+		return
+	}
+
+	claims := ctx.Value(oauth.ClaimsContext)
+	c, _ := json.Marshal(claims)
+	var fClaims dto.FirebaseClaims
+	json.Unmarshal(c, &fClaims)
+
+	var req dto.UpdateWeightGoalRequest
+	json.Unmarshal(payload, &req)
+
+	validate := validator.New()
+	err = validate.Struct(req)
+	if err != nil {
+		err = err.(validator.ValidationErrors)
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(dto.Object[any]{Error: err.Error()})
+		return
+	}
+
+	err = req.Validate()
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(dto.Object[any]{Error: err.Error()})
+		return
+	}
+
+	data, err := rest.clinicService.UpdateWeightGoal(ctx, &req)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(dto.Object[any]{Error: err.Error(), Message: "Failed to update weight goal"})
+		return
+	}
+
+	json.NewEncoder(w).Encode(dto.Object[*dto.CreateWeightGoalResponse]{Data: &data, Message: "OK"})
+}
+
+func (rest *REST) WeightGoalSimulation(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	w.Header().Set("Content-Type", "application/json")
+
+	payload, err := io.ReadAll(r.Body)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(dto.Object[any]{Error: err.Error()})
+		return
+	}
+
+	claims := ctx.Value(oauth.ClaimsContext)
+	c, _ := json.Marshal(claims)
+	var fClaims dto.FirebaseClaims
+	json.Unmarshal(c, &fClaims)
+
+	var req dto.SimulationWeightGoalRequest
+	json.Unmarshal(payload, &req)
+
+	validate := validator.New()
+	err = validate.Struct(req)
+	if err != nil {
+		err = err.(validator.ValidationErrors)
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(dto.Object[any]{Error: err.Error()})
+		return
+	}
+
+	err = req.Validate()
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(dto.Object[any]{Error: err.Error()})
+		return
+	}
+
+	data, err := rest.clinicService.WightGoalSimulation(ctx, req)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(dto.Object[any]{Error: err.Error(), Message: "Failed to simulate weight goal"})
+		return
+	}
+
+	json.NewEncoder(w).Encode(dto.Object[*dto.SimulationWeightGoalResponse]{Data: &data, Message: "OK"})
 }
