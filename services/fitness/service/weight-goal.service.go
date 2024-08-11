@@ -9,6 +9,7 @@ import (
 	"monorepo/internal/dto"
 	"monorepo/pkg/common"
 	"monorepo/services/fitness/model"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -24,11 +25,13 @@ const shortdDateLayout = "2006-01-02"
 func NewWeightGoalService(
 	tbWeightGoal common.Repository[model.WeightGoal, string],
 	tbWeightHistory common.Repository[model.WeightHistory, string],
+	profileService ProfileServiceInterface,
 ) *WeightGoalService {
 	service := &WeightGoalService{}
 	service.validate = validator.New()
 	service.tables.weightGoal = tbWeightGoal
 	service.tables.weightHistory = tbWeightHistory
+	service.profileService = profileService
 
 	return service
 }
@@ -39,6 +42,7 @@ type WeightGoalService struct {
 		weightGoal    common.Repository[model.WeightGoal, string]
 		weightHistory common.Repository[model.WeightHistory, string]
 	}
+	profileService ProfileServiceInterface
 }
 
 func (service *WeightGoalService) IsWeightGoalExists(ctx context.Context, profileID string) (bool, error) {
@@ -58,7 +62,7 @@ func (service *WeightGoalService) IsWeightGoalExists(ctx context.Context, profil
 
 func (service *WeightGoalService) CreateWightGoal(ctx context.Context, body dto.CreateWeightGoalRequest) (*dto.CreateWeightGoalResponse, error) {
 	now := time.Now()
-	profile, err := GetProfile(ctx)
+	profile, err := service.profileService.GetProfile(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("%w; %w", ErrGetProfile, err)
 	}
@@ -129,7 +133,7 @@ func (service *WeightGoalService) CreateWightGoal(ctx context.Context, body dto.
 	}
 
 	// update profile
-	if err := UpdateProfile(ctx, profile.UserID, dto.RequestUpdateProfile{
+	if err := service.profileService.UpdateProfile(ctx, profile.UserID, dto.RequestUpdateProfile{
 		Weight:        body.StartingWeight,
 		ActivityLevel: body.ActivityLevel,
 	}); err != nil {
@@ -150,7 +154,7 @@ func (service *WeightGoalService) CreateWightGoal(ctx context.Context, body dto.
 }
 
 func (service *WeightGoalService) GetWeightGoal(ctx context.Context) (*dto.GetWeightGoalResponse, error) {
-	profile, err := GetProfile(ctx)
+	profile, err := service.profileService.GetProfile(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("%w; %w", ErrGetProfile, err)
 	}
@@ -197,7 +201,7 @@ func (service *WeightGoalService) UpdateWeightGoal(ctx context.Context, body *dt
 	)
 
 	// get profile
-	profile, err := GetProfile(ctx)
+	profile, err := service.profileService.GetProfile(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("%w; %w", ErrGetProfile, err)
 	}
@@ -312,7 +316,7 @@ func (service *WeightGoalService) UpdateWeightGoal(ctx context.Context, body *dt
 	}
 
 	// update profile
-	if err := UpdateProfile(ctx, profile.UserID, dto.RequestUpdateProfile{
+	if err := service.profileService.UpdateProfile(ctx, profile.UserID, dto.RequestUpdateProfile{
 		Weight:        body.CurrentWeight,
 		ActivityLevel: updatedWG[0].ActivityLevel,
 	}); err != nil {
@@ -340,7 +344,7 @@ func (service *WeightGoalService) WightGoalSimulation(ctx context.Context, body 
 		res = dto.SimulationWeightGoalResponse{}
 	)
 
-	profile, err := GetProfile(ctx)
+	profile, err := service.profileService.GetProfile(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("%w; %w", ErrGetProfile, err)
 	}
@@ -372,6 +376,18 @@ func (service *WeightGoalService) WightGoalSimulation(ctx context.Context, body 
 		}
 		res.Pacing = append(res.Pacing, pace)
 	}
+
+	// set default order of paces
+	paceOrder := map[string]int{
+		constants.WeeklyWeightPaceRelaxed: 1,
+		constants.WeeklyWeightPaceNormal:  2,
+		constants.WeeklyWeightStrict:      3,
+	}
+
+	// Sort the pacing order using the default  paceOrder
+	sort.Slice(res.Pacing, func(i, j int) bool {
+		return paceOrder[res.Pacing[i].Pace] < paceOrder[res.Pacing[j].Pace]
+	})
 
 	res.StartingWeight = body.StartingWeight
 	res.StartingDate = now.Format(shortdDateLayout)

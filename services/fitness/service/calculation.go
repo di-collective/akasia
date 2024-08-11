@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-// Calculate BMR (basal metabolic rate)
+// Calculate BMR (basal metabolic rate) using Harris Benedict formula
 func CalculateBMR(gender string, weight, height float64, age int) float64 {
 	if strings.ToLower(gender) == constants.GenderMale {
 		return 66.5 + (13.75 * weight) + (5.003 * height) - (6.75 * float64(age))

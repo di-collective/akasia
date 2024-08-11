@@ -38,3 +38,8 @@ FIREBASE_CONFIG=/{workspace}/firebase.json
 ```
 
 ## Authentication
+
+## Unit Testing
+1. Install mockgen `go install github.com/golang/mock/mockgen@v1.6.0`
+2. Install gomock `go get github.com/golang/mock/gomock`
+3. Generate mocked func `mockgen -source=service/abc.service.go -destination=service/mock/abc.service.mock.go`
