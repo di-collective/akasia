@@ -12,8 +12,23 @@ import (
 	"github.com/go-chi/oauth"
 )
 
-func GetProfile(ctx context.Context) (*dto.ResponseGetProfile, error) {
-	url := os.Getenv("USER_BASE_URL") + "/profile"
+type ProfileService struct {
+	ProfileURL string
+}
+
+func NewProfileService() ProfileServiceInterface {
+	return &ProfileService{
+		ProfileURL: os.Getenv("USER_BASE_URL"),
+	}
+}
+
+type ProfileServiceInterface interface {
+	GetProfile(ctx context.Context) (*dto.ResponseGetProfile, error)
+	UpdateProfile(ctx context.Context, userID string, data dto.RequestUpdateProfile) error
+}
+
+func (p *ProfileService) GetProfile(ctx context.Context) (*dto.ResponseGetProfile, error) {
+	url := p.ProfileURL + "/profile"
 
 	type GetProfileResponse struct {
 		Data    dto.ResponseGetProfile `json:"data"`
@@ -36,8 +51,8 @@ func GetProfile(ctx context.Context) (*dto.ResponseGetProfile, error) {
 	return &resp.Data, nil
 }
 
-func UpdateProfile(ctx context.Context, userID string, data dto.RequestUpdateProfile) error {
-	url := os.Getenv("USER_BASE_URL") + "/profile/" + userID
+func (p *ProfileService) UpdateProfile(ctx context.Context, userID string, data dto.RequestUpdateProfile) error {
+	url := p.ProfileURL + "/profile/" + userID
 	var resp any
 
 	headers := []utils.Header{

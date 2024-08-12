@@ -5,9 +5,9 @@ import (
 	"monorepo/internal/config"
 	"monorepo/internal/db"
 	"monorepo/internal/repository"
-	"monorepo/services/medical-record/api"
-	"monorepo/services/medical-record/model"
-	"monorepo/services/medical-record/service"
+	"monorepo/services/fitness/api"
+	"monorepo/services/fitness/model"
+	"monorepo/services/fitness/service"
 	"net/http"
 
 	"github.com/caarlos0/env"
@@ -34,8 +34,10 @@ func main() {
 	tbWeightGoal := repository.NewRepository[model.WeightGoal, string](pgdb, repository.Tables.WeightGoal)
 	tbWeightHistory := repository.NewRepository[model.WeightHistory, string](pgdb, repository.Tables.WeightHistory)
 
+	profileService := service.NewProfileService()
+
 	restAPI := api.NewREST(
-		service.NewWeightGoalService(tbWeightGoal, tbWeightHistory),
+		service.NewWeightGoalService(tbWeightGoal, tbWeightHistory, profileService),
 		cfg,
 	)
 
