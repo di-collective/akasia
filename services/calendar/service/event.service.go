@@ -78,27 +78,29 @@ func (service *EventService) GetProfile(ctx context.Context) (int, *dto.Response
 	return res.StatusCode, &profile, nil
 }
 
-func (service *EventService) IsEventExists(ctx context.Context, profileID *string, locationID string, startTime time.Time, endTime time.Time) (bool, error) {
+func (service *EventService) IsEventExists(ctx context.Context, locationID string, startTime time.Time, endTime time.Time, _type string) (bool, error) {
 	var filters []exp.Expression
-	if profileID != nil && *profileID != "" {
-		filters = append(filters, goqu.C("profile_id").Eq(*profileID))
+	var existing []*models.Event
+	var err error
+	if _type == constants.Holiday {
+		filters = append(filters,
+			goqu.C("location_id").Eq(locationID),
+			goqu.And(
+				goqu.C("start_time").Eq(startTime),
+				goqu.C("end_time").Eq(endTime),
+			),
+			goqu.C("deleted_at").IsNull(),
+		)
+		existing, err = service.tables.event.List(ctx, &common.FilterOptions{
+			Filter: filters,
+			Page:   1,
+			Limit:  1,
+		})
+		if err != nil {
+			return false, fmt.Errorf("%w; %w", repository.ErrRepositoryQueryFail, err)
+		}
 	}
-	filters = append(filters,
-		goqu.C("location_id").Eq(locationID),
-		goqu.And(
-			goqu.C("start_time").Eq(startTime),
-			goqu.C("end_time").Eq(endTime),
-		),
-		goqu.C("deleted_at").IsNull(),
-	)
-	existing, err := service.tables.event.List(ctx, &common.FilterOptions{
-		Filter: filters,
-		Page:   1,
-		Limit:  1,
-	})
-	if err != nil {
-		return false, fmt.Errorf("%w; %w", repository.ErrRepositoryQueryFail, err)
-	}
+
 	return len(existing) > 0, nil
 }
 
@@ -117,7 +119,7 @@ func (service *EventService) CreateEvent(ctx context.Context, body *dto.RequestC
 	}
 
 	for _, event := range events {
-		isExist, err := service.IsEventExists(ctx, event.ProfileID, event.LocationID, event.StartTime, event.EndTime)
+		isExist, err := service.IsEventExists(ctx, event.LocationID, event.StartTime, event.EndTime, event.Type)
 		if err != nil {
 			if event.Type == constants.Holiday {
 				errMsg := fmt.Errorf("%w; %w", repository.ErrRepositoryMutateFail, err)
