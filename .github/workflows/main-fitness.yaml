@@ -2,7 +2,7 @@ name: Build & Push Svc fitness
 
 on:
   push:
-    branches: [main,do/add-svc-fitness]
+    branches: [main]
     paths: [services/fitness/**]
 
 jobs:
@@ -17,14 +17,19 @@ jobs:
       uses: actions/setup-go@v5
       with:
         go-version: ${{ matrix.go-version }}
-    - name: Unit test
-      run: 
-        go test ./services/fitness/...
-        
-    - name: Unit test -cover
-      run:
-        go test -cover ./services/fitness/...
-        
+
+    - name: Run Unit Tests
+      run: go test ./services/fitness/... >> test-output.log
+
+    - name: Run Coverage Tests
+      run: go test -cover ./services/fitness/... >> test-output.log
+
+    - name: Archive Test Logs
+      uses: actions/upload-artifact@v3
+      with:
+        name: go-test-logs
+        path: test-output.log
+
     # Setting up Docker Builder
     - name: Set up Docker Builder
       uses: docker/setup-buildx-action@v3
