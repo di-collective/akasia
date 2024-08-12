@@ -1,0 +1,44 @@
+name: Build & Push Svc fitness 
+
+on:
+  push:
+    branches: [main,do/add-svc-fitness]
+    paths: [services/fitness/**]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    environment: akasia-acr
+    steps:
+    # Checkout Branch
+    - uses: actions/checkout@v3
+
+    - name: Setup Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: ${{ matrix.go-version }}
+    - name: Unit test
+      run: 
+        go test ./services/fitness/...
+        go test -cover ./services/fitness/...
+
+    # Setting up Docker Builder
+    - name: Set up Docker Builder
+      uses: docker/setup-buildx-action@v3
+
+    #login alibaba Container Registry
+    - name: Login to ACR
+      uses: aliyun/acr-login@v1
+      with:
+        login-server: "${{ secrets.REGISTRY_ADDR }}"
+        username: "${{ secrets.REGISTRY_USERNAME }}"
+        password: "${{ secrets.REGISTRY_PASSWORD }}"
+
+    - name: Build and push image
+      env:
+        IMAGE_TAG: main
+        REPO_IMAGE: registry-intl.ap-southeast-5.aliyuncs.com/akasia/fitness
+      shell: bash
+      run: |
+        docker build --build-arg DIR=fitness -t $REPO_IMAGE:$IMAGE_TAG .
+        docker push $REPO_IMAGE:$IMAGE_TAG
