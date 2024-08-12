@@ -20,8 +20,11 @@ jobs:
     - name: Unit test
       run: 
         go test ./services/fitness/...
+        
+    - name: Unit test -cover
+      run:
         go test -cover ./services/fitness/...
-
+        
     # Setting up Docker Builder
     - name: Set up Docker Builder
       uses: docker/setup-buildx-action@v3
