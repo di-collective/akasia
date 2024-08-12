@@ -164,6 +164,8 @@ func (rest *REST) GetEvents(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	_type := r.URL.Query().Get("type")
+
 	code, location, err := rest.eventService.GetLocation(ctx, locationID)
 	if err != nil {
 		w.WriteHeader(code)
@@ -184,6 +186,7 @@ func (rest *REST) GetEvents(w http.ResponseWriter, r *http.Request) {
 		LocationID: locationID,
 		StartTime:  startTime,
 		EndTime:    endTime,
+		Type:       _type,
 	}, location, clinic)
 
 	if err != nil {

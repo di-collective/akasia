@@ -204,6 +204,7 @@ func (service *EventService) GetEvents(ctx context.Context, filter dto.FilterGet
 			goqu.C("end_time").Lte(filter.EndTime),
 			goqu.C("deleted_at").IsNull(),
 			goqu.C("status").Neq(constants.Canceled),
+			goqu.C("type").Eq(filter.Type),
 		},
 		Sort:  []exp.OrderedExpression{goqu.I("start_time").Asc()},
 		Page:  filter.Page,
