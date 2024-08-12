@@ -44,6 +44,7 @@ type FilterGetEvents struct {
 	LocationID string
 	StartTime  time.Time
 	EndTime    time.Time
+	Type       string
 }
 
 type FilterGetAppointments struct {
