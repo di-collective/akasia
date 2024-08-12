@@ -81,8 +81,6 @@ func (service *EmailService) ResetPassword(ctx context.Context, env *config.Envi
 		return err
 	}
 
-	name := fmt.Sprintf("%s %s", existing[0].FirstName, existing[0].LastName)
-
 	token := utils.RandAlphanumericString(16)
 	rp := &models.ResetPassword{
 		ID:         ulid.Make().String(),
@@ -101,7 +99,7 @@ func (service *EmailService) ResetPassword(ctx context.Context, env *config.Envi
 		Subject:       "Reset Password",
 		TemplateEmail: fmt.Sprintf("%s/forgot-password.html", env.DirPath),
 		Body: dto.EmailBody{
-			UserName:         name,
+			UserName:         existing[0].Name,
 			ResetPasswordUrl: fmt.Sprintf("%s?uid=%s&reset-token=%s", env.ResetPasswordUrl, user[0].ID, token),
 			CsMail:           env.CsMail,
 		},
