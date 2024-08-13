@@ -27,6 +27,7 @@ require (
 	cloud.google.com/go/longrunning v0.4.1 // indirect
 	cloud.google.com/go/storage v1.30.1 // indirect
 	github.com/MicahParks/keyfunc v1.9.0 // indirect
+	github.com/agiledragon/gomonkey v2.0.2+incompatible // indirect
 	github.com/gabriel-vasile/mimetype v1.4.3 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
@@ -57,6 +58,7 @@ require (
 )
 
 require (
+	github.com/agiledragon/gomonkey/v2 v2.12.0
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/doug-martin/goqu/v9 v9.19.0
 	github.com/go-chi/chi/v5 v5.0.12
