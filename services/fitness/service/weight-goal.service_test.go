@@ -10,11 +10,19 @@ import (
 
 	mock "monorepo/services/fitness/service/mock"
 
+	"github.com/agiledragon/gomonkey/v2"
+
 	"github.com/go-chi/oauth"
 	"github.com/golang/mock/gomock"
 )
 
 func TestWeightGoalService_WightGoalSimulation(t *testing.T) {
+	mockTime := time.Date(2024, time.August, 12, 0, 0, 0, 0, time.UTC)
+	patches := gomonkey.ApplyFunc(time.Now, func() time.Time {
+		return mockTime
+	})
+	defer patches.Reset()
+
 	ctx := context.WithValue(context.Background(), oauth.AccessTokenContext, "")
 
 	type args struct {
