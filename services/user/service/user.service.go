@@ -15,7 +15,6 @@ import (
 	"monorepo/services/user/models"
 	"net/url"
 	"os"
-	"strings"
 	"time"
 
 	"firebase.google.com/go/v4/auth"
@@ -137,14 +136,11 @@ func (service *UserService) CreateProfile(ctx context.Context, body *dto.Request
 		return nil, err
 	}
 
-	name := strings.Fields(body.Name)
-
 	newProfile := &models.Profile{
 		ID:          ulid.Make().String(),
 		UserID:      body.UserID,
 		MedicalID:   ulid.Make().String(),
-		FirstName:   strings.Join(name[:len(name)-1], " "),
-		LastName:    name[len(name)-1],
+		Name:        body.Name,
 		CountryCode: body.CountryCode,
 		Phone:       body.Phone,
 		NIK:         &body.NIK,
@@ -198,7 +194,6 @@ func (service *UserService) GetProfile(ctx context.Context, body *dto.FirebaseCl
 	}
 
 	res.Role = body.Role
-	res.Name = fmt.Sprintf("%s %s", profile[0].FirstName, profile[0].LastName)
 
 	return &res, nil
 }

@@ -18,8 +18,7 @@ type Profile struct {
 	ID            string       `db:"id" json:"id" goqu:"omitempty"`
 	UserID        string       `db:"user_id" json:"user_id" goqu:"omitempty"`
 	MedicalID     string       `db:"medical_id" json:"medical_id" goqu:"omitempty"`
-	FirstName     string       `db:"first_name" json:"first_name" goqu:"omitempty"`
-	LastName      string       `db:"last_name" json:"last_name" goqu:"omitempty"`
+	Name          string       `db:"name" json:"name" goqu:"omitempty"`
 	CountryCode   string       `db:"country_code" json:"country_code" goqu:"omitempty"`
 	Phone         string       `db:"phone" json:"phone" goqu:"omitempty"`
 	NIK           *string      `db:"nik" json:"nik" goqu:"omitempty"`
