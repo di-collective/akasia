@@ -49,6 +49,6 @@ jobs:
       run: |
         echo "$FIREBASE_JSON" >> ./services/user/config/service-account.json
         cat ./services/user/config/service-account.json
-        docker build --build-arg DIR=user -t registry-intl.ap-southeast-5.aliyuncs.com/akasia/akasia-be:$IMAGE_TAG .
+        docker build -f Dockerfile-user --build-arg DIR=user -t registry-intl.ap-southeast-5.aliyuncs.com/akasia/akasia-be:$IMAGE_TAG .
         docker push registry-intl.ap-southeast-5.aliyuncs.com/akasia/akasia-be:$IMAGE_TAG
         

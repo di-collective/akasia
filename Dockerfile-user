@@ -18,12 +18,12 @@ COPY --from=builder /app/service .
 
 ARG DIR
 # Copy the Pre-built binary file from the previous stage
-# RUN mkdir ./config
-# COPY --from=builder /app/services/$DIR/config/service-account.json ./config
+RUN mkdir ./config
+COPY --from=builder /app/services/$DIR/config/service-account.json ./config
 
 ARG DIR
-# RUN mkdir ./template
-# COPY --from=builder /app/services/$DIR/template/*.html ./template
+RUN mkdir ./template
+COPY --from=builder /app/services/$DIR/template/*.html ./template
 ENV TZ=Asia/Jakarta
 #Expose port
 EXPOSE 80
