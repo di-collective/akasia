@@ -7,6 +7,7 @@ import (
 	"monorepo/internal/dto"
 	"monorepo/services/fitness/service"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/go-chi/chi/v5"
@@ -19,10 +20,10 @@ import (
 type REST struct {
 	Router *chi.Mux
 
-	decoder         *schema.Decoder
-	clinicService   *service.WeightGoalService
-	env             *config.Environment
-	oauthAuthorizer func(next http.Handler) http.Handler
+	decoder           *schema.Decoder
+	weightGoalService *service.WeightGoalService
+	env               *config.Environment
+	oauthAuthorizer   func(next http.Handler) http.Handler
 }
 
 func NewREST(
@@ -38,11 +39,11 @@ func NewREST(
 	r.Use(middleware.Compress(6))
 
 	return &REST{
-		Router:          r,
-		decoder:         schema.NewDecoder(),
-		clinicService:   weightGoalService,
-		env:             env,
-		oauthAuthorizer: oauth.Authorize(env.JWTSecret, nil),
+		Router:            r,
+		decoder:           schema.NewDecoder(),
+		weightGoalService: weightGoalService,
+		env:               env,
+		oauthAuthorizer:   oauth.Authorize(env.JWTSecret, nil),
 	}
 }
 
@@ -54,6 +55,8 @@ func (rest *REST) InitializeRoutes() {
 		r.Get("/weight-goal", rest.GetWeightGoal)
 		r.Patch("/weight-goal", rest.UpdateWeightGoal)
 		r.Post("/weight-goal/simulation", rest.WeightGoalSimulation)
+		r.Put("/weight-history", rest.PutWeightHistory)
+		r.Get("/weight-history", rest.GetWeightHistories)
 	})
 }
 
@@ -97,7 +100,7 @@ func (rest *REST) CreateWeightGoal(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data, err := rest.clinicService.CreateWightGoal(ctx, req)
+	data, err := rest.weightGoalService.CreateWightGoal(ctx, req)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(dto.Object[any]{Error: err.Error(), Message: "Failed to create weight goal"})
@@ -110,7 +113,7 @@ func (rest *REST) CreateWeightGoal(w http.ResponseWriter, r *http.Request) {
 func (rest *REST) GetWeightGoal(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
-	data, err := rest.clinicService.GetWeightGoal(ctx)
+	data, err := rest.weightGoalService.GetWeightGoal(ctx)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(dto.Object[any]{Error: err.Error(), Message: "Failed to get weight goal"})
@@ -155,7 +158,7 @@ func (rest *REST) UpdateWeightGoal(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data, err := rest.clinicService.UpdateWeightGoal(ctx, &req)
+	data, err := rest.weightGoalService.UpdateWeightGoal(ctx, &req)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(dto.Object[any]{Error: err.Error(), Message: "Failed to update weight goal"})
@@ -200,7 +203,7 @@ func (rest *REST) WeightGoalSimulation(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data, err := rest.clinicService.WightGoalSimulation(ctx, req)
+	data, err := rest.weightGoalService.WightGoalSimulation(ctx, req)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(dto.Object[any]{Error: err.Error(), Message: "Failed to simulate weight goal"})
@@ -208,4 +211,100 @@ func (rest *REST) WeightGoalSimulation(w http.ResponseWriter, r *http.Request) {
 	}
 
 	json.NewEncoder(w).Encode(dto.Object[*dto.SimulationWeightGoalResponse]{Data: &data, Message: "OK"})
+}
+
+func (rest *REST) PutWeightHistory(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	w.Header().Set("Content-Type", "application/json")
+
+	payload, err := io.ReadAll(r.Body)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(dto.Object[any]{Error: err.Error()})
+		return
+	}
+
+	claims := ctx.Value(oauth.ClaimsContext)
+	c, _ := json.Marshal(claims)
+	var fClaims dto.FirebaseClaims
+	json.Unmarshal(c, &fClaims)
+
+	var req dto.CreateWeightHistoryRequest
+	json.Unmarshal(payload, &req)
+
+	validate := validator.New()
+	err = validate.Struct(req)
+	if err != nil {
+		err = err.(validator.ValidationErrors)
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(dto.Object[any]{Error: err.Error()})
+		return
+	}
+
+	err = req.Validate()
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(dto.Object[any]{Error: err.Error()})
+		return
+	}
+
+	data, err := rest.weightGoalService.PutWeightHistory(ctx, req)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(dto.Object[any]{Error: err.Error(), Message: "Failed to create weight goal"})
+		return
+	}
+
+	json.NewEncoder(w).Encode(dto.Object[*dto.WeightHistoryResponse]{Data: &data, Message: "OK"})
+}
+
+func (rest *REST) GetWeightHistories(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	w.Header().Set("Content-Type", "application/json")
+
+	var (
+		pageStr = r.URL.Query().Get("page")
+		page, _ = strconv.Atoi(pageStr)
+
+		limitStr = r.URL.Query().Get("limit")
+		limit, _ = strconv.Atoi(limitStr)
+
+		dateFrom   = r.URL.Query().Get("from")
+		dateTo     = r.URL.Query().Get("to")
+		currentStr = r.URL.Query().Get("current")
+		isCurrent  bool
+	)
+
+	if page == 0 {
+		page = 1
+	}
+
+	if limit == 0 {
+		limit = 50
+	}
+
+	if currentStr != "" && currentStr == "true" {
+		isCurrent = true
+	}
+
+	claims := ctx.Value(oauth.ClaimsContext)
+	c, _ := json.Marshal(claims)
+	var fClaims dto.FirebaseClaims
+	json.Unmarshal(c, &fClaims)
+
+	data, err := rest.weightGoalService.GetWeightHistory(ctx, dto.FilterGetWeightHistory{
+		IsCurrent: isCurrent,
+		Page:      page,
+		Limit:     limit,
+		DateFrom:  dateFrom,
+		DateTo:    dateTo,
+	})
+
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(dto.Object[any]{Error: err.Error(), Message: "Failed to Get Weight History"})
+		return
+	}
+
+	json.NewEncoder(w).Encode(dto.Object[[]dto.WeightHistoryResponse]{Data: &data, Message: "OK"})
 }
