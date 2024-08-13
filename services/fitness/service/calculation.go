@@ -71,3 +71,13 @@ func CalculateTargetDate(gender string, age int, height, startWeight, targetWeig
 	targetDate := startdate.AddDate(0, 0, int(daysToTarget))
 	return targetDate
 }
+
+// Chek if newly record weight achieve goal weight
+func IsAchieveGoal(recordedWeight, targetWeight float64, flag string) bool {
+	if strings.ToLower(flag) == constants.WeightGoalGain {
+		return recordedWeight >= targetWeight
+	} else if strings.ToLower(flag) == constants.WeightGoalLoss {
+		return recordedWeight <= targetWeight
+	}
+	return false
+}

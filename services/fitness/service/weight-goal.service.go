@@ -122,6 +122,7 @@ func (service *WeightGoalService) CreateWightGoal(ctx context.Context, body dto.
 	}
 
 	newWeightHistory := &model.WeightHistory{
+		ID:        ulid.Make().String(),
 		ProfileID: newWeightGoal.ProfileID,
 		Weight:    body.StartingWeight,
 		CreatedAt: time.Now(),
