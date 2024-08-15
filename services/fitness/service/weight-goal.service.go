@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"math"
@@ -296,6 +297,8 @@ func (service *WeightGoalService) UpdateWeightGoal(ctx context.Context, body *dt
 	updateWeightGoal.CaloriesToMaintain = caloriesToMaintain
 	updateWeightGoal.DailyCalorieBudget = dailyCaloriesBudget
 	updateWeightGoal.TargetDate = targetDate
+	updateWeightGoal.Flag = wgFlag
+	updateWeightGoal.UpdatedAt = sql.NullTime{Time: time.Now(), Valid: true}
 
 	// update wg
 	err = service.tables.weightGoal.Update(ctx, wg[0].ID, &updateWeightGoal)
