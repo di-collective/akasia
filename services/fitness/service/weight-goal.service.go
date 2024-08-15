@@ -327,6 +327,13 @@ func (service *WeightGoalService) UpdateWeightGoal(ctx context.Context, body *dt
 		return nil, fmt.Errorf("%w; %w", ErrUpdateProfile, err)
 	}
 
+	if _, err = service.PutWeightHistory(ctx, dto.CreateWeightHistoryRequest{
+		Weight: startWeight,
+		Date:   now.Format(shortdDateLayout),
+	}); err != nil {
+		return nil, err
+	}
+
 	res := dto.CreateWeightGoalResponse{
 		StartingWeight:      updatedWG[0].StartingWeight,
 		StartingDate:        updatedWG[0].StartingDate.Format(shortdDateLayout),
