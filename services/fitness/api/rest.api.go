@@ -111,6 +111,7 @@ func (rest *REST) CreateWeightGoal(w http.ResponseWriter, r *http.Request) {
 }
 
 func (rest *REST) GetWeightGoal(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
 	ctx := r.Context()
 
 	data, err := rest.weightGoalService.GetWeightGoal(ctx)
