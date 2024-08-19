@@ -226,6 +226,7 @@ func (service *WeightGoalService) UpdateWeightGoal(ctx context.Context, body *dt
 		return nil, fmt.Errorf("%w", ErrNotFound)
 	}
 
+	body.StartingDate = startDate.Format(time.RFC3339)
 	b, err := json.Marshal(&body)
 	if err != nil {
 		return nil, err
@@ -329,7 +330,7 @@ func (service *WeightGoalService) UpdateWeightGoal(ctx context.Context, body *dt
 
 	if _, err = service.PutWeightHistory(ctx, dto.CreateWeightHistoryRequest{
 		Weight: startWeight,
-		Date:   now.Format(shortdDateLayout),
+		Date:   startDate.Format(shortdDateLayout),
 	}); err != nil {
 		return nil, err
 	}
