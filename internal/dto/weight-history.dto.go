@@ -26,8 +26,8 @@ type FilterGetWeightHistory struct {
 func (r CreateWeightHistoryRequest) Validate() error {
 	now := time.Now()
 	date, _ := time.Parse("2006-01-02", r.Date)
-	dateNow := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
-	weightDate := time.Date(date.Year(), date.Month(), date.Day(), 0, 0, 0, 0, date.Location())
+	dateNow := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, time.Local)
+	weightDate := time.Date(date.Year(), date.Month(), date.Day(), 0, 0, 0, 0, time.Local)
 
 	if weightDate.After(dateNow) {
 		return errors.New("record weight date should not be in the future")
