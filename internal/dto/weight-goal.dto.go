@@ -82,8 +82,8 @@ func (r UpdateWeightGoalRequest) Validate() error {
 	now := time.Now()
 	startTime, _ := time.Parse("2006-01-02", r.StartingDate)
 
-	dateNow := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
-	startDate := time.Date(startTime.Year(), startTime.Month(), startTime.Day(), 0, 0, 0, 0, startTime.Location())
+	dateNow := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, time.Local)
+	startDate := time.Date(startTime.Year(), startTime.Month(), startTime.Day(), 0, 0, 0, 0, time.Local)
 
 	if startDate.After(dateNow) {
 		return errors.New("start date should be today or in the past")
