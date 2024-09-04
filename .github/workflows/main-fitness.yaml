@@ -5,7 +5,37 @@ on:
     branches: [main]
     paths: [services/fitness/**]
 
+permissions:
+  contents: read
+  id-token: write
+  issues: write
+  pull-requests: write
+
 jobs:
+  secret-scanning:
+    runs-on: ubuntu-latest
+    # continue-on-error: false
+    steps:
+    - uses: actions/checkout@v3
+    # Run TruffleHog inside Docker container
+    - name: Secret Scanning with TruffleHog
+      continue-on-error: true
+      run: |
+        docker run --rm \
+        -v ${{ github.workspace }}:/workspace \
+        -w /workspace \
+        trufflesecurity/trufflehog:latest filesystem . \
+        --exclude-paths trufflehog-excluded-paths.txt \
+        --fail --json --no-update > ${{ github.workspace }}/trufflehog-scan-result.json
+     
+    # Archive the TruffleHog JSON result as an artifact
+    - name: Archive TruffleHog Scan Result
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: trufflehog-scan-result
+        path: ${{ github.workspace }}/trufflehog-scan-result.json
+        
   build:
     runs-on: ubuntu-latest
     environment: akasia-acr
